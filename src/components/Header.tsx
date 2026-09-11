@@ -11,6 +11,8 @@ interface HeaderProps {
   noirMode: boolean;
   onToggleNoir: () => void;
   onOpenLibrary: () => void;
+  showAdult?: boolean;
+  onToggleAdult?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -21,6 +23,8 @@ export const Header: React.FC<HeaderProps> = ({
   noirMode,
   onToggleNoir,
   onOpenLibrary,
+  showAdult = false,
+  onToggleAdult,
 }) => {
   const [isMuted, setIsMuted] = useState(soundFx.getMuted());
   const [libraryCount, setLibraryCount] = useState(0);
@@ -193,6 +197,26 @@ export const Header: React.FC<HeaderProps> = ({
             </span>
           </button>
 
+          {/* 18+ Adult & Hentai Mode Toggle */}
+          {onToggleAdult && (
+            <button
+              onClick={() => {
+                soundFx.playSlash();
+                onToggleAdult();
+              }}
+              className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full text-[11px] sm:text-xs font-tech font-bold tracking-wide transition-all border cursor-pointer ${
+                showAdult
+                  ? 'bg-gradient-to-r from-red-700 to-rose-600 text-white border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.4)]'
+                  : 'bg-[#14131c] text-gray-400 hover:text-white border-white/10 hover:border-white/20'
+              }`}
+              title="Toggle 18+ Adult & Hentai Manga"
+            >
+              <span>🔞</span>
+              <span className="hidden sm:inline">18+ ADULT</span>
+              <span className={`w-1.5 h-1.5 rounded-full ${showAdult ? 'bg-white animate-ping' : 'bg-gray-600'}`} />
+            </button>
+          )}
+
           {/* Sound FX Toggle (Desktop) */}
           <button
             onClick={handleToggleMute}
@@ -301,16 +325,35 @@ export const Header: React.FC<HeaderProps> = ({
               </button>
             </div>
 
-            {/* Mobile Sound Toggle */}
-            <button
-              onClick={handleToggleMute}
-              className={`p-1.5 rounded-full border text-xs flex items-center gap-1 px-2.5 font-tech ${
-                isMuted ? 'bg-[#121118] text-gray-500 border-white/5' : 'bg-[#181622] text-white border-white/15'
-              }`}
-            >
-              {isMuted ? <VolumeX className="w-3 h-3" /> : <Volume2 className="w-3 h-3" />}
-              <span className="text-[10px]">{isMuted ? 'MUTED' : 'AUDIO'}</span>
-            </button>
+            {/* Mobile 18+ and Sound Toggles */}
+            <div className="flex items-center gap-1.5">
+              {onToggleAdult && (
+                <button
+                  onClick={() => {
+                    soundFx.playSlash();
+                    onToggleAdult();
+                  }}
+                  className={`p-1.5 rounded-full border text-xs flex items-center gap-1 px-2 font-tech font-bold ${
+                    showAdult
+                      ? 'bg-gradient-to-r from-red-700 to-rose-600 text-white border-red-500'
+                      : 'bg-[#121118] text-gray-400 border-white/10'
+                  }`}
+                >
+                  <span>🔞</span>
+                  <span className="text-[10px]">18+</span>
+                </button>
+              )}
+
+              <button
+                onClick={handleToggleMute}
+                className={`p-1.5 rounded-full border text-xs flex items-center gap-1 px-2.5 font-tech ${
+                  isMuted ? 'bg-[#121118] text-gray-500 border-white/5' : 'bg-[#181622] text-white border-white/15'
+                }`}
+              >
+                {isMuted ? <VolumeX className="w-3 h-3" /> : <Volume2 className="w-3 h-3" />}
+                <span className="text-[10px]">{isMuted ? 'MUTED' : 'AUDIO'}</span>
+              </button>
+            </div>
           </div>
         </div>
       )}

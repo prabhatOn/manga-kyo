@@ -7,8 +7,17 @@ import { MangaGrid } from './components/MangaGrid';
 import { MangaDetailModal } from './components/MangaDetailModal';
 import { MangaReader } from './components/Reader/MangaReader';
 import { LibraryModal } from './components/LibraryModal';
-import { Manga, Chapter } from './types/manga';
-import { getTopManga, getHindiManga, searchManga, getMangaChapters, CURATED_MANGA_VAULT } from './services/mangadex';
+import { LatestUpdatesSection } from './components/LatestUpdatesSection';
+import { Manga, Chapter, LatestChapterUpdate } from './types/manga';
+import {
+  getTopManga,
+  getHindiManga,
+  searchManga,
+  getMangaChapters,
+  getLatestChapterFeed,
+  getAdultManga,
+  CURATED_MANGA_VAULT,
+} from './services/mangadex';
 import { soundFx } from './services/audioEngine';
 
 export function App() {
@@ -20,6 +29,19 @@ export function App() {
 
   // Default to Japanese Color Mode (false = Japanese Vermilion & Gold, true = Noir B&W)
   const [noirMode, setNoirMode] = useState<boolean>(false);
+
+  // 18+ Adult & Hentai Content Mode (Persisted to localStorage)
+  const [showAdult, setShowAdult] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('mangakyo_show_adult') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  // MangaDex Live Latest Updates Feed
+  const [latestUpdates, setLatestUpdates] = useState<LatestChapterUpdate[]>([]);
+  const [loadingUpdates, setLoadingUpdates] = useState(true);
 
   // Modals & Reader
   const [detailManga, setDetailManga] = useState<Manga | null>(null);
@@ -43,6 +65,17 @@ export function App() {
     setNoirMode((prev) => !prev);
   };
 
+  const handleToggleAdult = () => {
+    soundFx.playClick();
+    setShowAdult((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem('mangakyo_show_adult', String(next));
+      } catch {}
+      return next;
+    });
+  };
+
   // Initial Data Fetch
   useEffect(() => {
     let isMounted = true;
@@ -51,23 +84,49 @@ export function App() {
     Promise.all([
       getTopManga('all', 24),
       getHindiManga(12),
+      getLatestChapterFeed(16),
     ])
-      .then(([top, hindi]) => {
+      .then(([top, hindi, updates]) => {
         if (!isMounted) return;
         if (top && top.length > 0) setMangaList(top);
         if (hindi && hindi.length > 0) setHindiManga(hindi);
+        if (updates && updates.length > 0) setLatestUpdates(updates);
       })
       .catch((err) => {
         console.warn('Initial fetch fallback initialized:', err);
       })
       .finally(() => {
-        if (isMounted) setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+          setLoadingUpdates(false);
+        }
       });
 
     return () => {
       isMounted = false;
     };
   }, []);
+
+  // When 18+ adult mode is turned on, fetch top adult & hentai titles from MangaDex
+  useEffect(() => {
+    if (showAdult) {
+      getAdultManga(24)
+        .then((adultList) => {
+          if (adultList && adultList.length > 0) {
+            setMangaList((prev) => {
+              const merged = [...prev];
+              adultList.forEach((item) => {
+                if (!merged.some((m) => m.id === item.id)) {
+                  merged.push(item);
+                }
+              });
+              return merged;
+            });
+          }
+        })
+        .catch((err) => console.warn('Failed to fetch adult titles:', err));
+    }
+  }, [showAdult]);
 
   // Search & Language Filter Debounce
   useEffect(() => {
@@ -131,6 +190,8 @@ export function App() {
         noirMode={noirMode}
         onToggleNoir={handleToggleNoir}
         onOpenLibrary={() => setIsLibraryOpen(true)}
+        showAdult={showAdult}
+        onToggleAdult={handleToggleAdult}
       />
 
       {/* Hero Banner (Shown when not searching) */}
@@ -150,6 +211,24 @@ export function App() {
 
       {/* GSAP Japanese Marquee Ticker */}
       <JapaneseMarquee noirMode={noirMode} />
+
+      {/* Live MangaDex Two-Column Latest Chapter Updates Feed */}
+      {!searchQuery && (
+        <LatestUpdatesSection
+          updates={latestUpdates}
+          loading={loadingUpdates}
+          onReadChapter={(manga, chapter) => {
+            soundFx.playDon();
+            setReadingSession({ manga, chapter });
+          }}
+          onSelectManga={(manga) => {
+            soundFx.playClick();
+            setDetailManga(manga);
+          }}
+          noirMode={noirMode}
+          showAdult={showAdult}
+        />
+      )}
 
       {/* Dedicated Hindi Manga Hub (Shown when language is 'all' or 'hi') */}
       {!searchQuery && selectedLanguage !== 'en' && (
@@ -171,6 +250,7 @@ export function App() {
           onSelectManga={(m) => setDetailManga(m)}
           onQuickRead={(m) => handleQuickRead(m)}
           noirMode={noirMode}
+          showAdult={showAdult}
         />
       </main>
 

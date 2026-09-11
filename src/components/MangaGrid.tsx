@@ -10,6 +10,7 @@ interface MangaGridProps {
   onSelectManga: (manga: Manga) => void;
   onQuickRead: (manga: Manga) => void;
   noirMode: boolean;
+  showAdult?: boolean;
 }
 
 const GENRES = [
@@ -23,6 +24,9 @@ const GENRES = [
   'Mystery',
   'Comedy',
   'Romance',
+  '🔞 18+ Adult',
+  'Hentai (R18)',
+  'Ecchi / Erotica',
 ];
 
 export const MangaGrid: React.FC<MangaGridProps> = ({
@@ -32,6 +36,7 @@ export const MangaGrid: React.FC<MangaGridProps> = ({
   onSelectManga,
   onQuickRead,
   noirMode,
+  showAdult = false,
 }) => {
   const [selectedGenre, setSelectedGenre] = useState('All');
   const [sortBy, setSortBy] = useState<'popular' | 'rating' | 'latest'>('popular');
@@ -39,7 +44,46 @@ export const MangaGrid: React.FC<MangaGridProps> = ({
   const filteredManga = useMemo(() => {
     let list = [...mangaList];
 
-    if (selectedGenre !== 'All') {
+    // Hide 18+ adult manga if showAdult is false AND user hasn't explicitly selected an adult genre
+    const isAdultGenreSelected =
+      selectedGenre === '🔞 18+ Adult' ||
+      selectedGenre === 'Hentai (R18)' ||
+      selectedGenre === 'Ecchi / Erotica';
+
+    if (!showAdult && !isAdultGenreSelected) {
+      list = list.filter(
+        (m) => !m.isAdult && m.contentRating !== 'pornographic' && m.contentRating !== 'erotica'
+      );
+    }
+
+    if (selectedGenre === '🔞 18+ Adult') {
+      list = mangaList.filter(
+        (m) =>
+          m.isAdult ||
+          m.contentRating === 'pornographic' ||
+          m.contentRating === 'erotica' ||
+          m.genres.some((g) => {
+            const low = g.toLowerCase();
+            return low.includes('adult') || low.includes('hentai') || low.includes('erotica');
+          })
+      );
+    } else if (selectedGenre === 'Hentai (R18)') {
+      list = mangaList.filter(
+        (m) =>
+          m.contentRating === 'pornographic' ||
+          m.genres.some((g) => g.toLowerCase().includes('hentai'))
+      );
+    } else if (selectedGenre === 'Ecchi / Erotica') {
+      list = mangaList.filter(
+        (m) =>
+          m.contentRating === 'erotica' ||
+          m.contentRating === 'suggestive' ||
+          m.genres.some((g) => {
+            const low = g.toLowerCase();
+            return low.includes('ecchi') || low.includes('erotica');
+          })
+      );
+    } else if (selectedGenre !== 'All') {
       list = list.filter((m) =>
         m.genres.some((g) => g.toLowerCase().includes(selectedGenre.toLowerCase()))
       );
@@ -54,7 +98,7 @@ export const MangaGrid: React.FC<MangaGridProps> = ({
     }
 
     return list;
-  }, [mangaList, selectedGenre, sortBy]);
+  }, [mangaList, selectedGenre, sortBy, showAdult]);
 
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 py-10 sm:py-16">
@@ -94,24 +138,40 @@ export const MangaGrid: React.FC<MangaGridProps> = ({
 
       {/* Genre Pills */}
       <div className="flex items-center gap-2 sm:gap-2.5 overflow-x-auto pb-3 mb-6 sm:mb-8 scrollbar-none">
-        {GENRES.map((genre) => (
-          <button
-            key={genre}
-            onClick={() => {
-              soundFx.playClick();
-              setSelectedGenre(genre);
-            }}
-            className={`px-3.5 sm:px-4 py-1.5 text-xs font-tech font-semibold whitespace-nowrap rounded-xs border transition-all ${
-              selectedGenre === genre
-                ? noirMode
-                  ? 'bg-white text-black border-white'
-                  : 'bg-[var(--vermilion)] text-white border-[var(--vermilion)]'
-                : 'bg-[#121118] text-gray-400 border-[#242131] hover:text-white hover:border-gray-500'
-            }`}
-          >
-            {genre}
-          </button>
-        ))}
+        {GENRES.map((genre) => {
+          const isAdultPill = genre.includes('18+') || genre.includes('Hentai') || genre.includes('Ecchi');
+          const isSelected = selectedGenre === genre;
+
+          let pillClass = '';
+          if (isSelected) {
+            if (isAdultPill) {
+              pillClass = 'bg-[#e50914] text-white border-[#e50914] shadow-md shadow-red-950/40';
+            } else {
+              pillClass = noirMode
+                ? 'bg-white text-black border-white'
+                : 'bg-[var(--vermilion)] text-white border-[var(--vermilion)]';
+            }
+          } else {
+            if (isAdultPill) {
+              pillClass = 'bg-[#200e12] text-red-400 border-red-900/50 hover:bg-red-950/60 hover:border-red-600 hover:text-red-200';
+            } else {
+              pillClass = 'bg-[#121118] text-gray-400 border-[#242131] hover:text-white hover:border-gray-500';
+            }
+          }
+
+          return (
+            <button
+              key={genre}
+              onClick={() => {
+                soundFx.playClick();
+                setSelectedGenre(genre);
+              }}
+              className={`px-3.5 sm:px-4 py-1.5 text-xs font-tech font-semibold whitespace-nowrap rounded-xs border transition-all ${pillClass}`}
+            >
+              {genre}
+            </button>
+          );
+        })}
       </div>
 
       {/* Loading Skeletons */}

@@ -1,7 +1,10 @@
-import { Manga, Chapter, ChapterPages } from '../types/manga';
+import { Manga, Chapter, ChapterPages, LatestChapterUpdate } from '../types/manga';
 
 const API_BASE = 'https://api.mangadex.org';
 const COVERS_BASE = 'https://uploads.mangadex.org/covers';
+
+// Query string parameter to guarantee all MangaDex ratings (including 18+ Adult, Erotica, and Hentai) are returned
+export const ALL_CONTENT_RATINGS = '&contentRating[]=safe&contentRating[]=suggestive&contentRating[]=erotica&contentRating[]=pornographic';
 
 // Guaranteed Real High-Resolution Official Covers (Zero 404s, Zero Broken Links)
 export const OFFICIAL_COVERS: { [mangaId: string]: string } = {
@@ -15,6 +18,8 @@ export const OFFICIAL_COVERS: { [mangaId: string]: string } = {
   '77bee52c-d2d6-44ad-a33a-1734c1fe696a': 'https://uploads.mangadex.org/covers/77bee52c-d2d6-44ad-a33a-1734c1fe696a/6079dd31-838b-4d61-87c4-121f3ad19158.jpg', // Eminence in Shadow
   '6b958848-c885-4735-9201-12ee77abcb3c': 'https://uploads.mangadex.org/covers/6b958848-c885-4735-9201-12ee77abcb3c/91a35e78-62b2-41fe-9869-ce051f2d1070.jpg', // SPY×FAMILY
   '1aca5c7d-f9db-4b8f-90a3-d56bf357ecb9': 'https://uploads.mangadex.org/covers/1aca5c7d-f9db-4b8f-90a3-d56bf357ecb9/8c15f930-f230-4852-a639-25f0a2e46366.jpg', // Burning Kabaddi Verified Working
+  '64ed4d14-9e00-4b63-8799-547a508f5344': 'https://uploads.mangadex.org/covers/64ed4d14-9e00-4b63-8799-547a508f5344/f6cd6d9c-b012-4e00-9b0b-382abc973476.jpg', // Parallel Paradise (Hentai/Adult)
+  '5b999c79-f715-4704-9072-367add2d6a69': 'https://uploads.mangadex.org/covers/5b999c79-f715-4704-9072-367add2d6a69/c37f5d53-0acb-43b7-9812-a0b609359e8f.jpg', // Hajimete no Sefure (Erotica/Adult)
 };
 
 // Map raw romanized titles to prestigious, recognizable official titles
@@ -58,6 +63,14 @@ const TITLE_NORMALIZER: { [id: string]: { title: string; kanji?: string } } = {
   '1aca5c7d-f9db-4b8f-90a3-d56bf357ecb9': {
     title: 'Burning Kabaddi (灼熱カバディ)',
     kanji: '灼熱カバディ',
+  },
+  '64ed4d14-9e00-4b63-8799-547a508f5344': {
+    title: 'Parallel Paradise (パラレルパラダイス)',
+    kanji: 'パラレルパラダイス',
+  },
+  '5b999c79-f715-4704-9072-367add2d6a69': {
+    title: 'Hajimete no Sefure (はじめてのセフレ)',
+    kanji: 'はじめてのセフレ',
   },
 };
 
@@ -111,6 +124,19 @@ function transformManga(raw: any): Manga {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const genres = (attrs.tags || []).map((t: any) => t.attributes?.name?.en).filter(Boolean);
 
+  const contentRating: 'safe' | 'suggestive' | 'erotica' | 'pornographic' = attrs.contentRating || 'safe';
+  const isAdult = contentRating === 'erotica' || contentRating === 'pornographic';
+
+  if (contentRating === 'pornographic') {
+    if (!genres.includes('Hentai')) genres.unshift('Hentai');
+    if (!genres.includes('18+ Adult')) genres.unshift('18+ Adult');
+  } else if (contentRating === 'erotica') {
+    if (!genres.includes('Erotica')) genres.unshift('Erotica');
+    if (!genres.includes('18+ Adult')) genres.unshift('18+ Adult');
+  } else if (contentRating === 'suggestive') {
+    if (!genres.includes('Ecchi')) genres.push('Ecchi');
+  }
+
   const availableLanguages = attrs.availableTranslatedLanguages || [];
   const hasHindi =
     availableLanguages.includes('hi') ||
@@ -134,6 +160,8 @@ function transformManga(raw: any): Manga {
     availableLanguages,
     latestChapter: attrs.lastChapter || '100+',
     hasHindi,
+    contentRating,
+    isAdult,
   };
 }
 
@@ -165,6 +193,8 @@ export const CURATED_MANGA_VAULT: Manga[] = [
     availableLanguages: ['en', 'ja'],
     latestChapter: '376',
     hasHindi: false,
+    contentRating: 'erotica',
+    isAdult: true,
   },
   {
     id: 'a77742b1-befd-49a4-bff5-1ad4e6b0ef7b',
@@ -309,6 +339,44 @@ export const CURATED_MANGA_VAULT: Manga[] = [
     availableLanguages: ['en', 'ja'],
     latestChapter: '210',
     hasHindi: false,
+    contentRating: 'safe',
+    isAdult: false,
+  },
+  {
+    id: '64ed4d14-9e00-4b63-8799-547a508f5344',
+    title: 'Parallel Paradise (パラレルパラダイス)',
+    description: 'Youta Tada is an ordinary high school student who is suddenly summoned to a fantasy world inhabited solely by women, where no men have existed for centuries. High-intensity adult fantasy manga with explicit artwork and dark twists.',
+    coverArtUrl: 'https://uploads.mangadex.org/covers/64ed4d14-9e00-4b63-8799-547a508f5344/f6cd6d9c-b012-4e00-9b0b-382abc973476.jpg',
+    status: 'ongoing',
+    year: 2017,
+    author: 'Okamoto Lynn',
+    artist: 'Okamoto Lynn',
+    genres: ['Hentai', '18+ Adult', 'Ecchi', 'Fantasy', 'Isekai', 'Seinen'],
+    rating: 9.5,
+    views: 6400000,
+    availableLanguages: ['en', 'ja'],
+    latestChapter: '295',
+    hasHindi: false,
+    contentRating: 'pornographic',
+    isAdult: true,
+  },
+  {
+    id: '5b999c79-f715-4704-9072-367add2d6a69',
+    title: 'Hajimete no Sefure (はじめてのセフレ)',
+    description: 'A modern romantic erotica drama depicting the nuanced emotional vulnerabilities and raw physical intimacy between young adults navigating complex relationships.',
+    coverArtUrl: 'https://uploads.mangadex.org/covers/5b999c79-f715-4704-9072-367add2d6a69/c37f5d53-0acb-43b7-9812-a0b609359e8f.jpg',
+    status: 'ongoing',
+    year: 2022,
+    author: 'Kisaragi Gunma',
+    artist: 'Kisaragi Gunma',
+    genres: ['18+ Adult', 'Erotica', 'Romance', 'Drama', 'Seinen'],
+    rating: 9.3,
+    views: 2800000,
+    availableLanguages: ['en', 'ja'],
+    latestChapter: '14',
+    hasHindi: false,
+    contentRating: 'erotica',
+    isAdult: true,
   }
 ];
 
@@ -463,10 +531,34 @@ export const VERIFIED_REAL_CHAPTERS: { [mangaId: string]: Chapter[] } = {
       scanlationGroup: 'MangaONE Scans',
     },
   ],
+  // Parallel Paradise: 18 Real Pages in Chapter 294!
+  '64ed4d14-9e00-4b63-8799-547a508f5344': [
+    {
+      id: '093229fb-406e-4024-85f0-033e642d5b60',
+      mangaId: '64ed4d14-9e00-4b63-8799-547a508f5344',
+      chapter: '294',
+      title: 'Desire and Destiny',
+      language: 'en',
+      pagesCount: 18,
+      scanlationGroup: 'Lynn Scans',
+    },
+  ],
+  // Hajimete no Sefure: 23 Real Pages in Chapter 2!
+  '5b999c79-f715-4704-9072-367add2d6a69': [
+    {
+      id: 'a7625263-7396-4827-8755-56b3b108f4c3',
+      mangaId: '5b999c79-f715-4704-9072-367add2d6a69',
+      chapter: '2',
+      title: 'Whispered Nights',
+      language: 'en',
+      pagesCount: 23,
+      scanlationGroup: 'BananaMangas',
+    },
+  ],
 };
 
 /**
- * Fetch Top Ranked Manga from MangaDex API with fallback
+ * Fetch Top Ranked Manga from MangaDex API with fallback (Includes all content ratings)
  */
 export async function getTopManga(language: 'all' | 'en' | 'hi' = 'all', limit: number = 24): Promise<Manga[]> {
   try {
@@ -478,7 +570,7 @@ export async function getTopManga(language: 'all' | 'en' | 'hi' = 'all', limit: 
         : '';
 
     const res = await fetch(
-      `${API_BASE}/manga?limit=${limit}&order[followedCount]=desc&includes[]=cover_art&includes[]=author${langParams}`
+      `${API_BASE}/manga?limit=${limit}&order[followedCount]=desc&includes[]=cover_art&includes[]=author${ALL_CONTENT_RATINGS}${langParams}`
     );
 
     if (res.ok) {
@@ -515,7 +607,7 @@ export async function getTopManga(language: 'all' | 'en' | 'hi' = 'all', limit: 
 export async function getHindiManga(limit: number = 15): Promise<Manga[]> {
   try {
     const res = await fetch(
-      `${API_BASE}/manga?availableTranslatedLanguage[]=hi&limit=${limit}&order[followedCount]=desc&includes[]=cover_art&includes[]=author`
+      `${API_BASE}/manga?availableTranslatedLanguage[]=hi&limit=${limit}&order[followedCount]=desc&includes[]=cover_art&includes[]=author${ALL_CONTENT_RATINGS}`
     );
     if (res.ok) {
       const data = await res.json();
@@ -539,7 +631,151 @@ export async function getHindiManga(limit: number = 15): Promise<Manga[]> {
 }
 
 /**
- * Search Manga across MangaDex and Local Curated Vault
+ * Fetch Top Adult / 18+ Manga (Erotica & Hentai)
+ */
+export async function getAdultManga(limit: number = 24): Promise<Manga[]> {
+  try {
+    const res = await fetch(
+      `${API_BASE}/manga?limit=${limit}&contentRating[]=erotica&contentRating[]=pornographic&order[followedCount]=desc&includes[]=cover_art&includes[]=author`
+    );
+    if (res.ok) {
+      const data = await res.json();
+      if (data?.data && Array.isArray(data.data) && data.data.length > 0) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const apiManga = data.data.map((m: any) => transformManga(m));
+        const adultVault = CURATED_MANGA_VAULT.filter(m => m.isAdult);
+        const merged = [...adultVault];
+        apiManga.forEach((m: Manga) => {
+          if (!merged.some(c => c.id === m.id)) merged.push(m);
+        });
+        return merged;
+      }
+    }
+  } catch (err) {
+    console.warn('MangaDex Adult fetch failed:', err);
+  }
+  return CURATED_MANGA_VAULT.filter(m => m.isAdult);
+}
+
+/**
+ * Fetch Top Hentai Manga (Pornographic Rating)
+ */
+export async function getHentaiManga(limit: number = 24): Promise<Manga[]> {
+  try {
+    const res = await fetch(
+      `${API_BASE}/manga?limit=${limit}&contentRating[]=pornographic&order[followedCount]=desc&includes[]=cover_art&includes[]=author`
+    );
+    if (res.ok) {
+      const data = await res.json();
+      if (data?.data && Array.isArray(data.data) && data.data.length > 0) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const apiManga = data.data.map((m: any) => transformManga(m));
+        const hentaiVault = CURATED_MANGA_VAULT.filter(m => m.contentRating === 'pornographic');
+        const merged = [...hentaiVault];
+        apiManga.forEach((m: Manga) => {
+          if (!merged.some(c => c.id === m.id)) merged.push(m);
+        });
+        return merged;
+      }
+    }
+  } catch (err) {
+    console.warn('MangaDex Hentai fetch failed:', err);
+  }
+  return CURATED_MANGA_VAULT.filter(m => m.contentRating === 'pornographic');
+}
+
+/**
+ * Fetch Latest Manga Updates with Chapters (As shown in MangaDex Latest Feed)
+ */
+export async function getLatestUpdates(limit: number = 16): Promise<Manga[]> {
+  try {
+    const res = await fetch(
+      `${API_BASE}/manga?limit=${limit}&order[latestUploadedChapter]=desc&includes[]=cover_art&includes[]=author${ALL_CONTENT_RATINGS}`
+    );
+    if (res.ok) {
+      const data = await res.json();
+      if (data?.data && Array.isArray(data.data) && data.data.length > 0) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return data.data.map((m: any) => transformManga(m));
+      }
+    }
+  } catch (err) {
+    console.warn('MangaDex latest updates fetch failed:', err);
+  }
+  return CURATED_MANGA_VAULT;
+}
+
+/**
+ * Fetch Real Latest Chapter Feed with Covers and Translation Groups (Matches MangaDex frontpage)
+ */
+export async function getLatestChapterFeed(limit: number = 14): Promise<LatestChapterUpdate[]> {
+  try {
+    const chRes = await fetch(
+      `${API_BASE}/chapter?limit=${limit}&order[readableAt]=desc&includes[]=manga&includes[]=scanlation_group${ALL_CONTENT_RATINGS}`
+    );
+    if (!chRes.ok) return [];
+    const chData = await chRes.json();
+    if (!chData?.data || !Array.isArray(chData.data)) return [];
+
+    // Collect distinct manga IDs to fetch their cover filenames in batch
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const mangaIds = Array.from(new Set(chData.data.map((c: any) => c.relationships?.find((r: any) => r.type === 'manga')?.id).filter(Boolean)));
+    const coversMap: { [mangaId: string]: string } = {};
+
+    if (mangaIds.length > 0) {
+      try {
+        const mangaQuery = mangaIds.map(id => `ids[]=${id}`).join('&');
+        const mRes = await fetch(`${API_BASE}/manga?${mangaQuery}&includes[]=cover_art${ALL_CONTENT_RATINGS}`);
+        if (mRes.ok) {
+          const mData = await mRes.json();
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          mData?.data?.forEach((m: any) => {
+            const coverRel = (m.relationships || []).find((r: any) => r.type === 'cover_art');
+            if (coverRel?.attributes?.fileName) {
+              coversMap[m.id] = `${COVERS_BASE}/${m.id}/${coverRel.attributes.fileName}.256.jpg`;
+            }
+          });
+        }
+      } catch (err) {
+        console.warn('Failed to load covers for latest chapters:', err);
+      }
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return chData.data.map((c: any) => {
+      const attrs = c.attributes || {};
+      const mRel = (c.relationships || []).find((r: any) => r.type === 'manga');
+      const gRel = (c.relationships || []).find((r: any) => r.type === 'scanlation_group');
+      const mId = mRel?.id || '';
+      const mAttrs = mRel?.attributes || {};
+      const mTitleObj = mAttrs.title || {};
+      const mangaTitle = mTitleObj.en || Object.values(mTitleObj)[0] || 'Serialized Manga';
+      const contentRating = mAttrs.contentRating || 'safe';
+      const isAdult = contentRating === 'erotica' || contentRating === 'pornographic';
+
+      return {
+        id: c.id,
+        chapter: attrs.chapter || '1',
+        volume: attrs.volume || undefined,
+        title: attrs.title || '',
+        language: attrs.translatedLanguage || 'en',
+        publishAt: attrs.readableAt || attrs.publishAt || new Date().toISOString(),
+        scanlationGroup: gRel?.attributes?.name || 'Community Scanlation',
+        mangaId: mId,
+        mangaTitle,
+        coverArtUrl: coversMap[mId] || OFFICIAL_COVERS[mId] || '/Standard-list-img-4.jpg',
+        contentRating,
+        isAdult,
+      };
+    });
+  } catch (err) {
+    console.warn('MangaDex latest chapter feed failed:', err);
+    return [];
+  }
+}
+
+/**
+ * Search Manga across MangaDex and Local Curated Vault (Includes all content ratings)
  */
 export async function searchManga(query: string, language: 'all' | 'en' | 'hi' = 'all'): Promise<Manga[]> {
   const trimmed = query.trim().toLowerCase();
@@ -556,7 +792,7 @@ export async function searchManga(query: string, language: 'all' | 'en' | 'hi' =
         : '';
 
     const res = await fetch(
-      `${API_BASE}/manga?title=${encodeURIComponent(query)}&limit=25&includes[]=cover_art&includes[]=author${langParams}`
+      `${API_BASE}/manga?title=${encodeURIComponent(query)}&limit=25&includes[]=cover_art&includes[]=author${ALL_CONTENT_RATINGS}${langParams}`
     );
     if (res.ok) {
       const data = await res.json();
@@ -599,7 +835,7 @@ export async function getMangaChapters(mangaId: string, language?: 'en' | 'hi' |
   const fetchFeed = async (langParam: string): Promise<Chapter[]> => {
     try {
       const res = await fetch(
-        `${API_BASE}/manga/${mangaId}/feed?limit=50&order[chapter]=desc&includes[]=scanlation_group${langParam}`
+        `${API_BASE}/manga/${mangaId}/feed?limit=50&order[chapter]=desc&includes[]=scanlation_group${ALL_CONTENT_RATINGS}${langParam}`
       );
       if (!res.ok) return [];
       const data = await res.json();

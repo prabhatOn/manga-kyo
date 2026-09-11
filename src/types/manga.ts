@@ -20,6 +20,23 @@ export interface Manga {
   totalChapters?: number;
   latestChapter?: string;
   hasHindi?: boolean;
+  contentRating?: 'safe' | 'suggestive' | 'erotica' | 'pornographic';
+  isAdult?: boolean;
+}
+
+export interface LatestChapterUpdate {
+  id: string;
+  chapter: string;
+  volume?: string;
+  title: string;
+  language: string;
+  publishAt: string;
+  scanlationGroup: string;
+  mangaId: string;
+  mangaTitle: string;
+  coverArtUrl?: string;
+  contentRating?: 'safe' | 'suggestive' | 'erotica' | 'pornographic';
+  isAdult?: boolean;
 }
 
 export interface Chapter {

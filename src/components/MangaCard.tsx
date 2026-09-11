@@ -56,6 +56,21 @@ export const MangaCard: React.FC<MangaCardProps> = ({
           </span>
         </div>
 
+        {/* Top-Right Badges for Adult / Hentai / Ecchi */}
+        <div className="absolute top-2.5 right-2.5 flex flex-col items-end gap-1 z-10">
+          {manga.isAdult && (
+            <span className="px-2 py-0.5 bg-gradient-to-r from-red-700 to-rose-600 text-white font-tech font-black text-[9px] uppercase tracking-wider rounded-xs shadow-md border border-red-500/40 flex items-center gap-1 backdrop-blur-xs">
+              <span>🔞</span>
+              <span>{manga.contentRating === 'pornographic' ? 'HENTAI' : '18+ ADULT'}</span>
+            </span>
+          )}
+          {manga.contentRating === 'suggestive' && !manga.isAdult && (
+            <span className="px-1.5 py-0.5 bg-purple-950/90 text-purple-200 border border-purple-500/40 font-tech text-[9px] font-bold rounded-xs backdrop-blur-xs">
+              ECCHI
+            </span>
+          )}
+        </div>
+
         {/* Chapter counter badge */}
         <div className="absolute bottom-2.5 left-2.5 z-10 bg-black/85 text-gray-300 font-mono text-[10px] px-2 py-0.5 rounded-xs border border-white/10">
           CH. {manga.latestChapter || '01'}

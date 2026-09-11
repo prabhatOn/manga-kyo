@@ -158,6 +158,12 @@ export const MangaDetailModal: React.FC<MangaDetailModalProps> = ({
                     हिन्दी अनुवाद
                   </div>
                 )}
+                {manga.isAdult && (
+                  <div className="absolute top-2.5 left-2.5 bg-gradient-to-r from-red-700 to-rose-600 text-white font-tech font-black text-[9px] px-2 py-0.5 rounded-full shadow-md border border-red-500/40 flex items-center gap-1">
+                    <span>🔞</span>
+                    <span>{manga.contentRating === 'pornographic' ? 'HENTAI 18+' : 'ADULT 18+'}</span>
+                  </div>
+                )}
               </div>
 
               {/* Minimal Vault Save Pills */}
@@ -192,9 +198,16 @@ export const MangaDetailModal: React.FC<MangaDetailModalProps> = ({
             {/* Right: Manga Information */}
             <div className="md:col-span-8 space-y-4">
               <div>
-                <h2 className="font-editorial text-2xl sm:text-3xl font-bold text-white tracking-tight leading-tight">
-                  {mainTitle}
-                </h2>
+                <div className="flex flex-wrap items-center gap-2">
+                  <h2 className="font-editorial text-2xl sm:text-3xl font-bold text-white tracking-tight leading-tight">
+                    {mainTitle}
+                  </h2>
+                  {manga.isAdult && (
+                    <span className="px-2.5 py-0.5 rounded-full bg-red-950/80 text-red-300 text-[10px] font-tech font-black uppercase tracking-wider border border-red-600/50">
+                      🔞 {manga.contentRating === 'pornographic' ? 'HENTAI 18+' : 'ADULT 18+'}
+                    </span>
+                  )}
+                </div>
                 {secondaryTitle && (
                   <p className="font-hindi text-sm text-[var(--kin-gold)] mt-1 font-medium">
                     {secondaryTitle}
