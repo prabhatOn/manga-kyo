@@ -944,11 +944,8 @@ export async function getChapterPages(chapterId: string): Promise<ChapterPages> 
         const pages = hasDataSaver ? data.chapter.dataSaver : data.chapter.data;
         const folder = hasDataSaver ? 'data-saver' : 'data';
 
-        // Use authorized MangaDex@Home distributed node delivery URLs with high-speed proxying (guarantees zero ISP blocks, zero anti-hotlink blocks)
-        const pageUrls = pages.map((p: string) => {
-          const direct = `${baseUrl}/${folder}/${hash}/${p}`;
-          return `/api/image-proxy?url=${encodeURIComponent(direct)}`;
-        });
+        // Use authorized MangaDex@Home distributed node delivery URLs (fast, zero anti-hotlink blocks)
+        const pageUrls = pages.map((p: string) => `${baseUrl}/${folder}/${hash}/${p}`);
 
         return {
           chapterId,

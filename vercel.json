@@ -1,17 +1,17 @@
 {
   "rewrites": [
     {
-      "source": "/api-mangadex/(.*)",
-      "destination": "/api/mangadex?path=/$1"
+      "source": "/api-mangadex/:match*",
+      "destination": "https://api.mangadex.org/:match*"
     },
     {
-      "source": "/((?!api/).*)",
+      "source": "/(.*)",
       "destination": "/index.html"
     }
   ],
   "headers": [
     {
-      "source": "/api/(.*)",
+      "source": "/api-mangadex/:match*",
       "headers": [
         { "key": "Access-Control-Allow-Origin", "value": "*" },
         { "key": "Access-Control-Allow-Methods", "value": "GET, POST, OPTIONS" },

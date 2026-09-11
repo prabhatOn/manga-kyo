@@ -675,11 +675,8 @@ export const MangaReader: React.FC<MangaReaderProps> = ({
                   referrerPolicy="no-referrer"
                   onError={(e) => {
                     const target = e.currentTarget;
-                    if (target.src.includes('/api/image-proxy?url=')) {
-                      const raw = decodeURIComponent(target.src.split('/api/image-proxy?url=')[1]);
-                      target.src = raw;
-                    } else {
-                      target.src = `/api/image-proxy?url=${encodeURIComponent(target.src)}`;
+                    if (target.src.includes('.mangadex.network/')) {
+                      target.src = target.src.replace(/https:\/\/[^/]+\.mangadex\.network\//, 'https://uploads.mangadex.org/');
                     }
                   }}
                   className={`w-full object-contain mx-auto shadow-md ${
@@ -736,11 +733,8 @@ export const MangaReader: React.FC<MangaReaderProps> = ({
                 draggable={false}
                 onError={(e) => {
                   const target = e.currentTarget;
-                  if (target.src.includes('/api/image-proxy?url=')) {
-                    const raw = decodeURIComponent(target.src.split('/api/image-proxy?url=')[1]);
-                    target.src = raw;
-                  } else {
-                    target.src = `/api/image-proxy?url=${encodeURIComponent(target.src)}`;
+                  if (target.src.includes('.mangadex.network/')) {
+                    target.src = target.src.replace(/https:\/\/[^/]+\.mangadex\.network\//, 'https://uploads.mangadex.org/');
                   }
                 }}
                 className={`max-h-[84vh] object-contain shadow-2xl border border-black/30 ${
@@ -761,11 +755,8 @@ export const MangaReader: React.FC<MangaReaderProps> = ({
                   draggable={false}
                   onError={(e) => {
                     const target = e.currentTarget;
-                    if (target.src.includes('/api/image-proxy?url=')) {
-                      const raw = decodeURIComponent(target.src.split('/api/image-proxy?url=')[1]);
-                      target.src = raw;
-                    } else {
-                      target.src = `/api/image-proxy?url=${encodeURIComponent(target.src)}`;
+                    if (target.src.includes('.mangadex.network/')) {
+                      target.src = target.src.replace(/https:\/\/[^/]+\.mangadex\.network\//, 'https://uploads.mangadex.org/');
                     }
                   }}
                   className={`max-h-[84vh] object-contain shadow-2xl border border-black/30 ${
@@ -803,11 +794,8 @@ export const MangaReader: React.FC<MangaReaderProps> = ({
                 draggable={false}
                 onError={(e) => {
                   const target = e.currentTarget;
-                  if (target.src.includes('/api/image-proxy?url=')) {
-                    const raw = decodeURIComponent(target.src.split('/api/image-proxy?url=')[1]);
-                    target.src = raw;
-                  } else {
-                    target.src = `/api/image-proxy?url=${encodeURIComponent(target.src)}`;
+                  if (target.src.includes('.mangadex.network/')) {
+                    target.src = target.src.replace(/https:\/\/[^/]+\.mangadex\.network\//, 'https://uploads.mangadex.org/');
                   }
                 }}
                 className={`max-h-[86vh] object-contain shadow-2xl pointer-events-none ${
