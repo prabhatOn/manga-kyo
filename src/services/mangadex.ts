@@ -2,7 +2,7 @@ import { Manga, Chapter, ChapterPages, LatestChapterUpdate } from '../types/mang
 import { CURATED_ADULT_VAULT, ADULT_COVERS, ADULT_VERIFIED_CHAPTERS } from './adultVault';
 import { PRECOMPUTED_CHAPTER_PAGES } from './chapterPagesVault';
 
-const API_BASE = 'https://api.mangadex.org';
+const API_BASE = import.meta.env.DEV ? '/api-mangadex' : 'https://api.mangadex.org';
 const COVERS_BASE = 'https://uploads.mangadex.org/covers';
 
 // Query string parameter to guarantee all MangaDex ratings (including 18+ Adult, Erotica, and Hentai) are returned
@@ -899,14 +899,15 @@ export async function getMangaChapters(mangaId: string, language?: 'en' | 'hi' |
  * Fetch Pages for a Chapter via MangaDex At-Home server (Real Manga Pages Only)
  */
 export async function getChapterPages(chapterId: string): Promise<ChapterPages> {
-  // 1. Instant Verified Precomputed Pages (100% Guaranteed Zero CORS Failures, Instant Page Load)
-  if (PRECOMPUTED_CHAPTER_PAGES[chapterId]) {
-    return PRECOMPUTED_CHAPTER_PAGES[chapterId];
-  }
-
-  // 2. Fetch real manga pages directly from MangaDex At-Home server
+  // 1. First attempt: Fetch real manga pages directly from MangaDex At-Home server
+  // Live MD@Home provides dedicated authorized CDN nodes with zero anti-hotlink placeholder blocks
   try {
-    const res = await fetch(`${API_BASE}/at-home/server/${chapterId}`);
+    let res = await fetch(`${API_BASE}/at-home/server/${chapterId}`);
+    if (!res.ok && API_BASE !== 'https://api.mangadex.org') {
+      // Fallback directly to official endpoint if dev proxy missed
+      res = await fetch(`https://api.mangadex.org/at-home/server/${chapterId}`);
+    }
+
     if (res.ok) {
       const data = await res.json();
       if (
@@ -918,26 +919,31 @@ export async function getChapterPages(chapterId: string): Promise<ChapterPages> 
       ) {
         const baseUrl = data.baseUrl;
         const hash = data.chapter.hash;
-        const pages = data.chapter.data;
-        // Use MangaDex high-speed CDN to avoid node rate-limits
-        const fallbackUrls = pages.map((p: string) => `https://uploads.mangadex.org/data/${hash}/${p}`);
+        const hasDataSaver = Array.isArray(data.chapter.dataSaver) && data.chapter.dataSaver.length > 0;
+        const pages = hasDataSaver ? data.chapter.dataSaver : data.chapter.data;
+        const folder = hasDataSaver ? 'data-saver' : 'data';
+
+        // Use authorized MangaDex@Home distributed node delivery URLs (fast, zero anti-hotlink blocks)
+        const pageUrls = pages.map((p: string) => `${baseUrl}/${folder}/${hash}/${p}`);
 
         return {
           chapterId,
           baseUrl,
           hash,
           pages,
-          fallbackUrls,
+          fallbackUrls: pageUrls,
         };
       }
     }
   } catch (e) {
-    console.warn(`Failed to load MangaDex At-Home pages for chapter ${chapterId}:`, e);
+    console.warn(`Live MangaDex At-Home server fetch failed for chapter ${chapterId}:`, e);
   }
 
-  // 3. Fallback: Full 27 Authentic Pages of Solo Leveling or 94 Pages of Berserk
-  return (
-    PRECOMPUTED_CHAPTER_PAGES['a05e77dc-ff36-44e3-99a9-a36529a341a2'] ||
-    PRECOMPUTED_CHAPTER_PAGES['6310f6a1-17ee-4890-b837-2ec1b372905b']
-  );
+  // 2. Secondary Fallback: If this specific chapter exists in local precomputed vault
+  if (PRECOMPUTED_CHAPTER_PAGES[chapterId]) {
+    return PRECOMPUTED_CHAPTER_PAGES[chapterId];
+  }
+
+  // 3. Fail explicitly so the reader displays a retry UI rather than showing the wrong manga
+  throw new Error(`Unable to load pages for chapter ${chapterId}. Please check your connection or try again.`);
 }

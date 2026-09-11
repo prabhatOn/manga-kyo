@@ -38,6 +38,8 @@ export const MangaReader: React.FC<MangaReaderProps> = ({
 }) => {
   const [pages, setPages] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [retryKey, setRetryKey] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [showControls, setShowControls] = useState(true);
@@ -72,12 +74,16 @@ export const MangaReader: React.FC<MangaReaderProps> = ({
   useEffect(() => {
     let isMounted = true;
     setLoading(true);
+    setLoadError(null);
     setChapterCompleted(false);
 
     getChapterPages(currentChapter.id)
       .then((data: ChapterPages) => {
         if (!isMounted) return;
         const pageUrls = data.fallbackUrls || [];
+        if (pageUrls.length === 0) {
+          throw new Error('No pages found for this chapter on MangaDex.');
+        }
         setPages(pageUrls);
         setTotalPages(pageUrls.length > 0 ? pageUrls.length : 1);
 
@@ -89,8 +95,10 @@ export const MangaReader: React.FC<MangaReaderProps> = ({
           setCurrentPage(1);
         }
       })
-      .catch((err) => {
+      .catch((err: any) => {
+        if (!isMounted) return;
         console.error('Failed to load chapter pages:', err);
+        setLoadError(err?.message || 'Failed to load chapter pages. Please try again.');
       })
       .finally(() => {
         if (isMounted) setLoading(false);
@@ -104,7 +112,7 @@ export const MangaReader: React.FC<MangaReaderProps> = ({
     return () => {
       isMounted = false;
     };
-  }, [currentChapter.id, manga.id]);
+  }, [currentChapter.id, manga.id, retryKey]);
 
   // Preload next images in background
   useEffect(() => {
@@ -625,6 +633,29 @@ export const MangaReader: React.FC<MangaReaderProps> = ({
             </div>
             <p className="text-[11px] font-tech text-gray-500">MangaDex distributed network delivery</p>
           </div>
+        ) : loadError ? (
+          <div className="bg-[#121118] border border-red-500/30 shadow-2xl rounded-xs p-6 sm:p-8 text-center max-w-md space-y-4">
+            <div className="font-editorial text-lg text-red-400 font-bold tracking-wide">
+              FAILED TO LOAD CHAPTER
+            </div>
+            <p className="text-xs text-gray-300 font-tech leading-relaxed">
+              {loadError}
+            </p>
+            <div className="flex gap-3 justify-center pt-2">
+              <button
+                onClick={() => setRetryKey((k) => k + 1)}
+                className="px-5 py-2 bg-white text-black text-xs font-tech font-bold rounded-xs hover:bg-gray-200 transition-colors"
+              >
+                RETRY
+              </button>
+              <button
+                onClick={onClose}
+                className="px-4 py-2 bg-[#1f1d2b] text-gray-300 text-xs font-tech rounded-xs hover:text-white transition-colors"
+              >
+                CLOSE
+              </button>
+            </div>
+          </div>
         ) : pages.length === 0 ? (
           <div className="bg-[#121118] border border-[#2a2738] rounded-xs p-8 text-center max-w-md">
             <div className="font-editorial text-lg text-white font-bold mb-2">CHAPTER EMPTY</div>
@@ -641,6 +672,12 @@ export const MangaReader: React.FC<MangaReaderProps> = ({
                   src={url}
                   alt={`Page ${idx + 1}`}
                   referrerPolicy="no-referrer"
+                  onError={(e) => {
+                    const target = e.currentTarget;
+                    if (target.src.includes('/data-saver/')) {
+                      target.src = target.src.replace('/data-saver/', '/data/');
+                    }
+                  }}
                   className={`w-full object-contain mx-auto shadow-md ${
                     readerNoir ? 'reader-noir-filter' : ''
                   } ${settings.screentoneOverlay ? 'reader-screentone' : ''}`}
@@ -693,6 +730,12 @@ export const MangaReader: React.FC<MangaReaderProps> = ({
                 alt={`Page ${currentPage}`}
                 referrerPolicy="no-referrer"
                 draggable={false}
+                onError={(e) => {
+                  const target = e.currentTarget;
+                  if (target.src.includes('/data-saver/')) {
+                    target.src = target.src.replace('/data-saver/', '/data/');
+                  }
+                }}
                 className={`max-h-[84vh] object-contain shadow-2xl border border-black/30 ${
                   readerNoir ? 'reader-noir-filter' : ''
                 } ${settings.screentoneOverlay ? 'reader-screentone' : ''}`}
@@ -709,6 +752,12 @@ export const MangaReader: React.FC<MangaReaderProps> = ({
                   alt={`Page ${currentPage + 1}`}
                   referrerPolicy="no-referrer"
                   draggable={false}
+                  onError={(e) => {
+                    const target = e.currentTarget;
+                    if (target.src.includes('/data-saver/')) {
+                      target.src = target.src.replace('/data-saver/', '/data/');
+                    }
+                  }}
                   className={`max-h-[84vh] object-contain shadow-2xl border border-black/30 ${
                     readerNoir ? 'reader-noir-filter' : ''
                   } ${settings.screentoneOverlay ? 'reader-screentone' : ''}`}
@@ -742,6 +791,12 @@ export const MangaReader: React.FC<MangaReaderProps> = ({
                 alt={`Page ${currentPage}`}
                 referrerPolicy="no-referrer"
                 draggable={false}
+                onError={(e) => {
+                  const target = e.currentTarget;
+                  if (target.src.includes('/data-saver/')) {
+                    target.src = target.src.replace('/data-saver/', '/data/');
+                  }
+                }}
                 className={`max-h-[86vh] object-contain shadow-2xl pointer-events-none ${
                   settings.fit === 'width' ? 'w-full' : ''
                 } ${readerNoir ? 'reader-noir-filter' : ''} ${
