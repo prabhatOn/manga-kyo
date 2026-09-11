@@ -11,6 +11,7 @@ interface MangaGridProps {
   onQuickRead: (manga: Manga) => void;
   noirMode: boolean;
   showAdult?: boolean;
+  onEnableAdult?: () => void;
 }
 
 const GENRES = [
@@ -37,6 +38,7 @@ export const MangaGrid: React.FC<MangaGridProps> = ({
   onQuickRead,
   noirMode,
   showAdult = false,
+  onEnableAdult,
 }) => {
   const [selectedGenre, setSelectedGenre] = useState('All');
   const [sortBy, setSortBy] = useState<'popular' | 'rating' | 'latest'>('popular');
@@ -64,14 +66,17 @@ export const MangaGrid: React.FC<MangaGridProps> = ({
           m.contentRating === 'erotica' ||
           m.genres.some((g) => {
             const low = g.toLowerCase();
-            return low.includes('adult') || low.includes('hentai') || low.includes('erotica');
+            return low.includes('adult') || low.includes('hentai') || low.includes('erotica') || low.includes('ecchi');
           })
       );
     } else if (selectedGenre === 'Hentai (R18)') {
       list = mangaList.filter(
         (m) =>
           m.contentRating === 'pornographic' ||
-          m.genres.some((g) => g.toLowerCase().includes('hentai'))
+          m.genres.some((g) => {
+            const low = g.toLowerCase();
+            return low.includes('hentai') || low.includes('r18') || low.includes('pornographic');
+          })
       );
     } else if (selectedGenre === 'Ecchi / Erotica') {
       list = mangaList.filter(
@@ -80,7 +85,7 @@ export const MangaGrid: React.FC<MangaGridProps> = ({
           m.contentRating === 'suggestive' ||
           m.genres.some((g) => {
             const low = g.toLowerCase();
-            return low.includes('ecchi') || low.includes('erotica');
+            return low.includes('ecchi') || low.includes('erotica') || low.includes('suggestive');
           })
       );
     } else if (selectedGenre !== 'All') {
@@ -165,6 +170,9 @@ export const MangaGrid: React.FC<MangaGridProps> = ({
               onClick={() => {
                 soundFx.playClick();
                 setSelectedGenre(genre);
+                if (isAdultPill && !showAdult) {
+                  onEnableAdult?.();
+                }
               }}
               className={`px-3.5 sm:px-4 py-1.5 text-xs font-tech font-semibold whitespace-nowrap rounded-xs border transition-all ${pillClass}`}
             >

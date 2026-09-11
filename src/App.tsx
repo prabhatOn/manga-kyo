@@ -16,6 +16,7 @@ import {
   getMangaChapters,
   getLatestChapterFeed,
   getAdultManga,
+  getHentaiManga,
   CURATED_MANGA_VAULT,
 } from './services/mangadex';
 import { soundFx } from './services/audioEngine';
@@ -88,7 +89,20 @@ export function App() {
     ])
       .then(([top, hindi, updates]) => {
         if (!isMounted) return;
-        if (top && top.length > 0) setMangaList(top);
+        if (top && top.length > 0) {
+          setMangaList((prev) => {
+            const map = new Map<string, Manga>();
+            // Keep all curated vault titles (including 42 curated adult & hentai works)
+            CURATED_MANGA_VAULT.forEach((m) => map.set(m.id, m));
+            prev.forEach((m) => {
+              if (!map.has(m.id)) map.set(m.id, m);
+            });
+            top.forEach((m) => {
+              if (!map.has(m.id)) map.set(m.id, m);
+            });
+            return Array.from(map.values());
+          });
+        }
         if (hindi && hindi.length > 0) setHindiManga(hindi);
         if (updates && updates.length > 0) setLatestUpdates(updates);
       })
@@ -110,17 +124,20 @@ export function App() {
   // When 18+ adult mode is turned on, fetch top adult & hentai titles from MangaDex
   useEffect(() => {
     if (showAdult) {
-      getAdultManga(24)
-        .then((adultList) => {
-          if (adultList && adultList.length > 0) {
+      Promise.all([
+        getAdultManga(30),
+        getHentaiManga(25)
+      ])
+        .then(([adultList, hentaiList]) => {
+          const combined = [...(adultList || []), ...(hentaiList || [])];
+          if (combined.length > 0) {
             setMangaList((prev) => {
-              const merged = [...prev];
-              adultList.forEach((item) => {
-                if (!merged.some((m) => m.id === item.id)) {
-                  merged.push(item);
-                }
+              const map = new Map<string, Manga>();
+              prev.forEach((m) => map.set(m.id, m));
+              combined.forEach((item) => {
+                map.set(item.id, item);
               });
-              return merged;
+              return Array.from(map.values());
             });
           }
         })
@@ -251,6 +268,12 @@ export function App() {
           onQuickRead={(m) => handleQuickRead(m)}
           noirMode={noirMode}
           showAdult={showAdult}
+          onEnableAdult={() => {
+            setShowAdult(true);
+            try {
+              localStorage.setItem('mangakyo_show_adult', 'true');
+            } catch {}
+          }}
         />
       </main>
 

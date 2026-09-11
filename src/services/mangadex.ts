@@ -1,4 +1,5 @@
 import { Manga, Chapter, ChapterPages, LatestChapterUpdate } from '../types/manga';
+import { CURATED_ADULT_VAULT, ADULT_COVERS, ADULT_VERIFIED_CHAPTERS } from './adultVault';
 
 const API_BASE = 'https://api.mangadex.org';
 const COVERS_BASE = 'https://uploads.mangadex.org/covers';
@@ -8,6 +9,7 @@ export const ALL_CONTENT_RATINGS = '&contentRating[]=safe&contentRating[]=sugges
 
 // Guaranteed Real High-Resolution Official Covers (Zero 404s, Zero Broken Links)
 export const OFFICIAL_COVERS: { [mangaId: string]: string } = {
+  ...ADULT_COVERS,
   '801513ba-a712-498c-8f57-cae55b38cc92': 'https://cdn.myanimelist.net/images/manga/1/157897.jpg', // Berserk Volume 1
   'a77742b1-befd-49a4-bff5-1ad4e6b0ef7b': 'https://cdn.myanimelist.net/images/manga/3/216464.jpg', // Chainsaw Man Volume 1
   '32d76d19-8a05-4db0-9fc2-e0b0648fe9d0': 'https://cdn.myanimelist.net/images/manga/3/222295.jpg', // Solo Leveling
@@ -178,6 +180,7 @@ function hashString(str: string): number {
  * Curated Masterpieces with Verified Working Official Covers & Chapters
  */
 export const CURATED_MANGA_VAULT: Manga[] = [
+  ...CURATED_ADULT_VAULT,
   {
     id: '801513ba-a712-498c-8f57-cae55b38cc92',
     title: 'Berserk (ベルセルク)',
@@ -342,48 +345,13 @@ export const CURATED_MANGA_VAULT: Manga[] = [
     contentRating: 'safe',
     isAdult: false,
   },
-  {
-    id: '64ed4d14-9e00-4b63-8799-547a508f5344',
-    title: 'Parallel Paradise (パラレルパラダイス)',
-    description: 'Youta Tada is an ordinary high school student who is suddenly summoned to a fantasy world inhabited solely by women, where no men have existed for centuries. High-intensity adult fantasy manga with explicit artwork and dark twists.',
-    coverArtUrl: 'https://uploads.mangadex.org/covers/64ed4d14-9e00-4b63-8799-547a508f5344/f6cd6d9c-b012-4e00-9b0b-382abc973476.jpg',
-    status: 'ongoing',
-    year: 2017,
-    author: 'Okamoto Lynn',
-    artist: 'Okamoto Lynn',
-    genres: ['Hentai', '18+ Adult', 'Ecchi', 'Fantasy', 'Isekai', 'Seinen'],
-    rating: 9.5,
-    views: 6400000,
-    availableLanguages: ['en', 'ja'],
-    latestChapter: '295',
-    hasHindi: false,
-    contentRating: 'pornographic',
-    isAdult: true,
-  },
-  {
-    id: '5b999c79-f715-4704-9072-367add2d6a69',
-    title: 'Hajimete no Sefure (はじめてのセフレ)',
-    description: 'A modern romantic erotica drama depicting the nuanced emotional vulnerabilities and raw physical intimacy between young adults navigating complex relationships.',
-    coverArtUrl: 'https://uploads.mangadex.org/covers/5b999c79-f715-4704-9072-367add2d6a69/c37f5d53-0acb-43b7-9812-a0b609359e8f.jpg',
-    status: 'ongoing',
-    year: 2022,
-    author: 'Kisaragi Gunma',
-    artist: 'Kisaragi Gunma',
-    genres: ['18+ Adult', 'Erotica', 'Romance', 'Drama', 'Seinen'],
-    rating: 9.3,
-    views: 2800000,
-    availableLanguages: ['en', 'ja'],
-    latestChapter: '14',
-    hasHindi: false,
-    contentRating: 'erotica',
-    isAdult: true,
-  }
 ];
 
 /**
  * Verified Real Manga Chapters with Verified High-Res Pages on MangaDex CDN
  */
 export const VERIFIED_REAL_CHAPTERS: { [mangaId: string]: Chapter[] } = {
+  ...ADULT_VERIFIED_CHAPTERS,
   // Berserk: 94 Real Manga Pages in Chapter 1!
   '801513ba-a712-498c-8f57-cae55b38cc92': [
     {
