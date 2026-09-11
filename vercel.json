@@ -1,8 +1,8 @@
 {
   "rewrites": [
     {
-      "source": "/api-mangadex/:match*",
-      "destination": "https://api.mangadex.org/:match*"
+      "source": "/api-mangadex/(.*)",
+      "destination": "/api/mangadex?path=/$1"
     },
     {
       "source": "/(.*)",
@@ -11,11 +11,17 @@
   ],
   "headers": [
     {
-      "source": "/api-mangadex/:match*",
+      "source": "/api/(.*)",
       "headers": [
         { "key": "Access-Control-Allow-Origin", "value": "*" },
         { "key": "Access-Control-Allow-Methods", "value": "GET, POST, OPTIONS" },
         { "key": "Access-Control-Allow-Headers", "value": "*" }
+      ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "Referrer-Policy", "value": "no-referrer" }
       ]
     }
   ]

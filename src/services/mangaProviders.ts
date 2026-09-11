@@ -114,12 +114,15 @@ export function getMultiSourceChapterPages(chapterId: string): ChapterPages | nu
   for (const mangaChapters of Object.values(MULTI_SOURCE_CHAPTERS)) {
     const match = mangaChapters.find((c) => c.id === chapterId);
     if (match) {
+      const proxiedUrls = match.pages.map(
+        (p) => `/api/image-proxy?url=${encodeURIComponent(p)}`
+      );
       return {
         chapterId: match.id,
         baseUrl: '',
         hash: '',
-        pages: match.pages,
-        fallbackUrls: match.pages,
+        pages: proxiedUrls,
+        fallbackUrls: proxiedUrls,
       };
     }
   }
