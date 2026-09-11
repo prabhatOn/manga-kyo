@@ -121,7 +121,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
   return (
     <section
       ref={containerRef}
-      className="relative w-full h-[calc(100vh-68px)] min-h-[640px] max-h-[960px] flex items-center overflow-hidden border-b border-[var(--ink-border)] select-none transition-colors duration-500"
+      className="relative w-full min-h-[560px] lg:h-[calc(100vh-68px)] lg:min-h-[640px] lg:max-h-[960px] flex items-center overflow-hidden border-b border-[var(--ink-border)] select-none transition-colors duration-500 py-8 sm:py-12 lg:py-0"
     >
       {/* 1. DYNAMIC FULL-SCREEN BACKGROUND MATCHING ACTIVE MANGA (BALANCED VISIBILITY) */}
       <div className="absolute inset-0 z-0 overflow-hidden">
@@ -164,20 +164,20 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
         <div className="absolute inset-0 bg-screentone-dots opacity-10 pointer-events-none" />
 
         {/* Giant Japanese Kanji Watermark (Subtle & Atmospheric) */}
-        <div className="absolute right-4 sm:right-16 top-1/2 -translate-y-1/2 pointer-events-none select-none overflow-hidden opacity-[0.05] text-white">
-          <span className="watermark-manga-text text-[160px] sm:text-[240px] lg:text-[340px] font-black uppercase">
+        <div className="absolute right-2 sm:right-16 top-1/2 -translate-y-1/2 pointer-events-none select-none overflow-hidden opacity-[0.04] text-white">
+          <span className="watermark-manga-text text-[100px] sm:text-[200px] lg:text-[340px] font-black uppercase">
             {itemMeta.watermark}
           </span>
         </div>
       </div>
 
       {/* 3. CLEAN, UNCLUTTERED HERO CONTENT */}
-      <div className="max-w-7xl mx-auto px-6 sm:px-12 w-full py-8 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center">
+      <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 w-full py-4 sm:py-8 relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-center">
           {/* LEFT: Minimal Editorial Typography */}
-          <div ref={textRef} className="lg:col-span-7 flex flex-col justify-center space-y-4 sm:space-y-5">
+          <div ref={textRef} className="lg:col-span-7 flex flex-col justify-center space-y-3.5 sm:space-y-5 text-center lg:text-left items-center lg:items-start">
             {/* Minimal Index Eyebrow */}
-            <div className="flex items-center gap-3 text-xs font-tech tracking-widest uppercase text-gray-400">
+            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2.5 sm:gap-3 text-xs font-tech tracking-widest uppercase text-gray-400">
               <span
                 className={`w-2 h-2 rounded-full ${
                   noirMode ? 'bg-white' : 'bg-[var(--vermilion)]'
@@ -200,21 +200,21 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
 
             {/* Imposing Title Block */}
             <div>
-              <h1 className="font-editorial text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-white tracking-wider uppercase leading-[0.92] drop-shadow-lg text-balance">
+              <h1 className="font-editorial text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-white tracking-wider uppercase leading-[0.92] drop-shadow-lg text-balance">
                 {mainTitle.replace('-', ' ')}
               </h1>
-              <p className="font-manga-bold text-xl sm:text-2xl text-[var(--vermilion)] tracking-widest mt-2 opacity-95">
+              <p className="font-manga-bold text-lg sm:text-xl md:text-2xl text-[var(--vermilion)] tracking-widest mt-1.5 sm:mt-2 opacity-95">
                 {itemMeta.kanji}
               </p>
             </div>
 
             {/* 1-Line Clean Poetic Logline */}
-            <p className="text-sm sm:text-base text-gray-300/90 font-normal leading-relaxed max-w-lg">
+            <p className="text-xs sm:text-sm md:text-base text-gray-300/90 font-normal leading-relaxed max-w-lg">
               {itemMeta.logline}
             </p>
 
             {/* Minimal Specs */}
-            <div className="flex items-center gap-4 text-xs font-tech text-gray-400 pt-1">
+            <div className="flex items-center gap-3 sm:gap-4 text-xs font-tech text-gray-400 pt-0.5 sm:pt-1">
               <span className="text-[var(--kin-gold)] font-bold">
                 ★ {current.rating?.toFixed(1) || '9.9'}
               </span>
@@ -225,13 +225,13 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
             </div>
 
             {/* Single Powerful CTA + Minimal Switcher */}
-            <div className="flex flex-wrap items-center gap-5 pt-3">
+            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3 sm:gap-5 pt-2 sm:pt-3 w-full sm:w-auto">
               <button
                 onClick={() => {
                   soundFx.playDon();
                   onReadChapter(current);
                 }}
-                className={`px-8 py-3.5 rounded-full font-tech font-bold text-xs tracking-wider uppercase transition-all flex items-center gap-2.5 active:scale-95 cursor-pointer shadow-xl ${
+                className={`w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-3.5 rounded-full font-tech font-bold text-xs tracking-wider uppercase transition-all flex items-center justify-center gap-2.5 active:scale-95 cursor-pointer shadow-xl ${
                   noirMode
                     ? 'bg-white text-black hover:bg-gray-200'
                     : 'bg-[var(--vermilion)] text-white hover:brightness-110 shadow-[0_0_24px_rgba(230,0,18,0.4)]'
@@ -242,7 +242,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
               </button>
 
               {/* Minimalist Slide Controls */}
-              <div className="flex items-center gap-2 bg-black/40 backdrop-blur-md px-3 py-2 rounded-full border border-white/10">
+              <div className="flex items-center gap-2 bg-black/40 backdrop-blur-md px-3 py-1.5 sm:py-2 rounded-full border border-white/10">
                 <button
                   onClick={handlePrev}
                   className="w-7 h-7 rounded-full flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
@@ -280,14 +280,14 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
               )}
 
               {/* 3D Physical Tankōbon Volume */}
-              <div className="relative w-64 sm:w-72 aspect-[1/1.48] bg-[#0c0b11] rounded-sm overflow-hidden border border-white/20 shadow-[0_30px_70px_rgba(0,0,0,0.9)] group-hover:border-white/40 group-hover:-translate-y-2 transition-all duration-500">
+              <div className="relative w-48 sm:w-60 md:w-64 lg:w-72 aspect-[1/1.48] bg-[#0c0b11] rounded-sm overflow-hidden border border-white/20 shadow-[0_30px_70px_rgba(0,0,0,0.9)] group-hover:border-white/40 group-hover:-translate-y-2 transition-all duration-500">
                 {/* Book Spine Highlight */}
                 <div className="absolute left-0 top-0 bottom-0 w-3 bg-gradient-to-r from-black/60 via-white/15 to-transparent z-20 pointer-events-none" />
 
                 {/* Top Corner Badge */}
-                <div className="absolute top-3 right-3 z-20">
+                <div className="absolute top-2.5 sm:top-3 right-2.5 sm:right-3 z-20">
                   <span
-                    className={`px-2 py-0.5 text-[9px] font-tech font-bold uppercase tracking-widest shadow-md rounded-xs ${
+                    className={`px-2 py-0.5 text-[8px] sm:text-[9px] font-tech font-bold uppercase tracking-widest shadow-md rounded-xs ${
                       noirMode ? 'bg-white text-black' : 'bg-[var(--vermilion)] text-white'
                     }`}
                   >

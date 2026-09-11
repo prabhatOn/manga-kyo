@@ -57,23 +57,23 @@ export const MangaGrid: React.FC<MangaGridProps> = ({
   }, [mangaList, selectedGenre, sortBy]);
 
   return (
-    <section className="max-w-7xl mx-auto px-6 sm:px-12 py-16">
+    <section className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 py-10 sm:py-16">
       {/* Title & Controls */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8 pb-6 border-b border-[var(--ink-border)]">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 sm:gap-6 mb-6 sm:mb-8 pb-4 sm:pb-6 border-b border-[var(--ink-border)]">
         <div>
-          <div className="flex items-center gap-2 mb-2">
+          <div className="flex items-center gap-2 mb-1.5 sm:mb-2">
             <span className="w-2 h-2 rounded-full bg-[var(--vermilion)]" />
             <span className="font-tech text-xs uppercase tracking-widest text-gray-400 font-semibold">
               {selectedLanguage === 'hi' ? 'HINDI ARCHIVE' : 'COMPLETE SERIALIZATION CATALOGUE'}
             </span>
           </div>
-          <h2 className="font-editorial text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+          <h2 className="font-editorial text-2xl sm:text-3xl md:text-4xl font-extrabold text-white tracking-tight">
             {selectedLanguage === 'hi' ? 'हिंदी मंगा संग्रह' : 'ALL SERIALIZED WORKS'}
           </h2>
         </div>
 
         {/* Sort Controls */}
-        <div className="flex items-center gap-3 self-start md:self-auto">
+        <div className="flex items-center gap-2.5 sm:gap-3 self-start sm:self-auto">
           <span className="text-xs font-tech text-gray-500 font-semibold uppercase tracking-wider">
             ORDER BY:
           </span>
@@ -83,7 +83,7 @@ export const MangaGrid: React.FC<MangaGridProps> = ({
               soundFx.playClick();
               setSortBy(e.target.value as 'popular' | 'rating' | 'latest');
             }}
-            className="bg-[#121118] text-white text-xs font-tech font-medium px-3.5 py-2 border border-[#2b273b] rounded-xs focus:outline-none focus:border-[var(--vermilion)] transition-colors"
+            className="bg-[#121118] text-white text-xs font-tech font-medium px-3 sm:px-3.5 py-1.5 sm:py-2 border border-[#2b273b] rounded-xs focus:outline-none focus:border-[var(--vermilion)] transition-colors"
           >
             <option value="popular">Most Followed</option>
             <option value="rating">Highest Rated</option>
@@ -93,7 +93,7 @@ export const MangaGrid: React.FC<MangaGridProps> = ({
       </div>
 
       {/* Genre Pills */}
-      <div className="flex items-center gap-2.5 overflow-x-auto pb-4 mb-8 scrollbar-thin">
+      <div className="flex items-center gap-2 sm:gap-2.5 overflow-x-auto pb-3 mb-6 sm:mb-8 scrollbar-none">
         {GENRES.map((genre) => (
           <button
             key={genre}
@@ -101,7 +101,7 @@ export const MangaGrid: React.FC<MangaGridProps> = ({
               soundFx.playClick();
               setSelectedGenre(genre);
             }}
-            className={`px-4 py-1.5 text-xs font-tech font-semibold whitespace-nowrap rounded-xs border transition-all ${
+            className={`px-3.5 sm:px-4 py-1.5 text-xs font-tech font-semibold whitespace-nowrap rounded-xs border transition-all ${
               selectedGenre === genre
                 ? noirMode
                   ? 'bg-white text-black border-white'
@@ -116,11 +116,11 @@ export const MangaGrid: React.FC<MangaGridProps> = ({
 
       {/* Loading Skeletons */}
       {loading ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 sm:gap-8 lg:gap-10">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-6 lg:gap-8">
           {Array.from({ length: 10 }).map((_, i) => (
             <div
               key={i}
-              className="bg-[#121118] border border-[#242131] rounded-xs p-3.5 space-y-3 animate-pulse"
+              className="bg-[#121118] border border-[#242131] rounded-xs p-3 space-y-3 animate-pulse"
             >
               <div className="aspect-[3/4.5] bg-[#1a1824] rounded-xs" />
               <div className="h-4 bg-[#1a1824] w-3/4 rounded-xs" />
@@ -129,8 +129,8 @@ export const MangaGrid: React.FC<MangaGridProps> = ({
           ))}
         </div>
       ) : filteredManga.length === 0 ? (
-        <div className="bg-[#121118] border border-[#262334] rounded-xs p-16 text-center my-8">
-          <div className="font-editorial text-2xl font-bold text-gray-300 mb-2">No Titles Found</div>
+        <div className="bg-[#121118] border border-[#262334] rounded-xs p-10 sm:p-16 text-center my-8">
+          <div className="font-editorial text-xl sm:text-2xl font-bold text-gray-300 mb-2">No Titles Found</div>
           <p className="text-gray-400 text-xs max-w-md mx-auto font-tech">
             No works match your current filter parameters. Try clearing your search query or selecting a different genre.
           </p>
@@ -142,7 +142,7 @@ export const MangaGrid: React.FC<MangaGridProps> = ({
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 sm:gap-8 lg:gap-10">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-6 lg:gap-8">
           {filteredManga.map((manga) => (
             <MangaCard
               key={manga.id}

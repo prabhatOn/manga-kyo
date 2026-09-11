@@ -37,12 +37,12 @@ export const LibraryModal: React.FC<LibraryModalProps> = ({
   const filtered = category === 'all' ? items : items.filter((i) => i.category === category);
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-in fade-in duration-150">
-      <div className="relative w-full max-w-3xl bg-[#0e0d14] border border-[#2b2838] shadow-2xl rounded-sm overflow-hidden my-auto max-h-[90vh] flex flex-col">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-md flex items-center justify-center p-2 sm:p-6 animate-in fade-in duration-150">
+      <div className="relative w-full max-w-3xl bg-[#0e0d14] border border-[#2b2838] shadow-2xl rounded-sm overflow-hidden my-auto max-h-[94vh] sm:max-h-[90vh] flex flex-col">
         {/* Header */}
-        <div className="bg-[#14121c] border-b border-[#242230] p-3 px-6 flex items-center justify-between text-white">
+        <div className="bg-[#14121c] border-b border-[#242230] p-3 px-4 sm:px-6 flex items-center justify-between text-white shrink-0">
           <div className="flex items-center gap-2">
-            <span className="font-editorial text-lg font-bold">
+            <span className="font-editorial text-base sm:text-lg font-bold">
               MY MANGA VAULT (個人書庫)
             </span>
             <span className="bg-[#1f1c2b] text-gray-300 px-2 py-0.5 font-mono text-xs rounded-xs">
@@ -59,7 +59,7 @@ export const LibraryModal: React.FC<LibraryModalProps> = ({
         </div>
 
         {/* Categories */}
-        <div className="bg-[#121118] border-b border-[#23202e] p-2 px-4 flex items-center gap-2 overflow-x-auto">
+        <div className="bg-[#121118] border-b border-[#23202e] p-2 px-3 sm:px-4 flex items-center gap-2 overflow-x-auto scrollbar-none shrink-0">
           {[
             { id: 'all', label: 'All Saved' },
             { id: 'reading', label: 'Reading' },
@@ -136,7 +136,7 @@ export const LibraryModal: React.FC<LibraryModalProps> = ({
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                  <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end pt-2 sm:pt-0 border-t border-white/5 sm:border-0">
                     {progress ? (
                       <button
                         onClick={() => {
@@ -144,7 +144,7 @@ export const LibraryModal: React.FC<LibraryModalProps> = ({
                           onQuickResume(item.manga, progress.chapterId);
                           onClose();
                         }}
-                        className="px-3 py-1.5 bg-white text-black font-tech text-xs font-bold rounded-xs hover:bg-gray-200 flex items-center gap-1.5 transition-colors"
+                        className="flex-1 sm:flex-initial px-3 py-1.5 bg-white text-black font-tech text-xs font-bold rounded-xs hover:bg-gray-200 flex items-center justify-center gap-1.5 transition-colors"
                       >
                         <Play className="w-3.5 h-3.5 fill-current" />
                         <span>RESUME CH. {progress.chapterNumber} (P. {progress.currentPage})</span>
@@ -156,7 +156,7 @@ export const LibraryModal: React.FC<LibraryModalProps> = ({
                           onQuickResume(item.manga);
                           onClose();
                         }}
-                        className="px-3 py-1.5 bg-white text-black font-tech text-xs font-bold rounded-xs hover:bg-gray-200 flex items-center gap-1.5 transition-colors"
+                        className="flex-1 sm:flex-initial px-3 py-1.5 bg-white text-black font-tech text-xs font-bold rounded-xs hover:bg-gray-200 flex items-center justify-center gap-1.5 transition-colors"
                       >
                         <Play className="w-3.5 h-3.5 fill-current" />
                         <span>READ CH. 01</span>
@@ -165,7 +165,7 @@ export const LibraryModal: React.FC<LibraryModalProps> = ({
 
                     <button
                       onClick={() => handleRemove(item.manga.id)}
-                      className="p-1.5 bg-[#1a1824] text-gray-400 hover:text-red-400 rounded-xs transition-colors"
+                      className="p-1.5 bg-[#1a1824] text-gray-400 hover:text-red-400 rounded-xs transition-colors shrink-0"
                       title="Remove"
                     >
                       <Trash2 className="w-4 h-4" />

@@ -49,9 +49,24 @@ export const MangaReader: React.FC<MangaReaderProps> = ({
   const [settings, setSettings] = useState<ReaderSettings>(getReaderSettings());
   const [chapterCompleted, setChapterCompleted] = useState(false);
 
+  // Slide to Read touch/gesture states
+  const [dragOffset, setDragOffset] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [showSwipeHint, setShowSwipeHint] = useState(true);
+  const touchStartRef = useRef<{ x: number; y: number; time: number } | null>(null);
+  const hasMovedRef = useRef(false);
+
   const containerRef = useRef<HTMLDivElement>(null);
   const webtoonRef = useRef<HTMLDivElement>(null);
   const hideControlsTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Auto-dismiss swipe hint
+  useEffect(() => {
+    const hintTimer = setTimeout(() => {
+      setShowSwipeHint(false);
+    }, 4000);
+    return () => clearTimeout(hintTimer);
+  }, []);
 
   // Load Chapter Pages
   useEffect(() => {
@@ -180,6 +195,86 @@ export const MangaReader: React.FC<MangaReaderProps> = ({
     }
   };
 
+  // Touch / Drag Gesture Handlers for "Slide to Read"
+  const handleTouchStart = (e: React.TouchEvent | React.MouseEvent) => {
+    if (settings.mode === 'vertical') return;
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    touchStartRef.current = { x: clientX, y: clientY, time: Date.now() };
+    hasMovedRef.current = false;
+    setIsDragging(true);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent | React.MouseEvent) => {
+    if (!touchStartRef.current || settings.mode === 'vertical') return;
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    const dx = clientX - touchStartRef.current.x;
+    const dy = clientY - touchStartRef.current.y;
+
+    if (Math.abs(dx) > 8 && Math.abs(dx) > Math.abs(dy)) {
+      hasMovedRef.current = true;
+      // Provide live physical drag feedback
+      setDragOffset(dx * 0.85);
+    }
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent | React.MouseEvent) => {
+    if (!touchStartRef.current || settings.mode === 'vertical') {
+      setIsDragging(false);
+      setDragOffset(0);
+      return;
+    }
+    const clientX = 'changedTouches' in e ? e.changedTouches[0].clientX : (e as React.MouseEvent).clientX;
+    const clientY = 'changedTouches' in e ? e.changedTouches[0].clientY : (e as React.MouseEvent).clientY;
+    const dx = clientX - touchStartRef.current.x;
+    const dy = clientY - touchStartRef.current.y;
+    const duration = Date.now() - touchStartRef.current.time;
+    const moved = hasMovedRef.current || Math.abs(dx) > 15;
+
+    touchStartRef.current = null;
+    setIsDragging(false);
+
+    if (showSwipeHint) setShowSwipeHint(false);
+
+    // Quick Tap Detection (Toggle controls or edge turn)
+    if (!moved && duration < 300) {
+      const width = window.innerWidth;
+      const leftZone = width * 0.3;
+      const rightZone = width * 0.7;
+
+      if (clientX >= leftZone && clientX <= rightZone) {
+        // Tap center: toggle reader HUD controls
+        setShowControls((prev) => !prev);
+      } else if (clientX < leftZone) {
+        // Tap left edge
+        if (settings.mode === 'rtl') handleNextPage();
+        else handlePrevPage();
+      } else {
+        // Tap right edge
+        if (settings.mode === 'rtl') handlePrevPage();
+        else handleNextPage();
+      }
+      setDragOffset(0);
+      return;
+    }
+
+    // Swipe Threshold Check
+    const threshold = 35;
+    const fastSwipe = duration < 300 && Math.abs(dx) > 20;
+
+    if (Math.abs(dx) > threshold || fastSwipe) {
+      // Swiping Left (dx < 0): pulls next page
+      // Swiping Right (dx > 0): pulls previous page
+      if (dx < 0) {
+        handleNextPage();
+      } else {
+        handlePrevPage();
+      }
+    }
+    setDragOffset(0);
+  };
+
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -244,28 +339,28 @@ export const MangaReader: React.FC<MangaReaderProps> = ({
           showControls ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0 pointer-events-none'
         }`}
       >
-        <div className="max-w-7xl mx-auto px-4 py-2.5 flex items-center justify-between gap-4">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 py-2 sm:py-2.5 flex items-center justify-between gap-2 sm:gap-4">
           {/* Back & Manga Info */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <button
               onClick={() => { soundFx.playClick(); onClose(); }}
-              className="p-1.5 bg-[#171520] text-gray-300 hover:text-white border border-[#2e2b3c] rounded-xs"
+              className="p-1.5 bg-[#171520] text-gray-300 hover:text-white border border-[#2e2b3c] rounded-xs shrink-0"
               title="Close Reader (Esc)"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
-            <div>
-              <h2 className="font-editorial text-sm sm:text-base font-bold text-white truncate max-w-xs sm:max-w-sm">
+            <div className="min-w-0">
+              <h2 className="font-editorial text-xs sm:text-base font-bold text-white truncate max-w-[130px] sm:max-w-xs md:max-w-sm">
                 {manga.title}
               </h2>
-              <div className="text-[11px] font-tech text-gray-400 flex items-center gap-2">
+              <div className="text-[10px] sm:text-[11px] font-tech text-gray-400 flex items-center gap-1.5 sm:gap-2">
                 <span>Ch. {currentChapter.chapter}</span>
                 {currentChapter.title && (
-                  <span className="text-gray-500 truncate max-w-xs hidden sm:inline">
+                  <span className="text-gray-500 truncate max-w-[100px] sm:max-w-xs hidden sm:inline">
                     - {currentChapter.title}
                   </span>
                 )}
-                <span className={`px-1.5 py-0.2 text-[9px] font-bold rounded-xs ${
+                <span className={`px-1 sm:px-1.5 py-0.2 text-[8px] sm:text-[9px] font-bold rounded-xs ${
                   currentChapter.language === 'hi' ? 'bg-[#ffc700] text-black font-hindi' : 'bg-[#181622] text-gray-300 border border-[#333]'
                 }`}>
                   {currentChapter.language === 'hi' ? 'हिन्दी' : 'EN'}
@@ -274,7 +369,7 @@ export const MangaReader: React.FC<MangaReaderProps> = ({
             </div>
           </div>
 
-          {/* Center Mode Controls */}
+          {/* Center Mode Controls (Desktop) */}
           <div className="hidden md:flex items-center bg-[#131219] border border-[#262434] rounded-xs p-0.5 text-xs font-tech font-semibold">
             <button
               onClick={() => handleUpdateSettings({ mode: 'vertical' })}
@@ -312,14 +407,14 @@ export const MangaReader: React.FC<MangaReaderProps> = ({
           </div>
 
           {/* Right Tools */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             {/* Noir Filter Toggle inside Reader */}
             <button
               onClick={() => {
                 soundFx.playClick();
                 setReaderNoir(!readerNoir);
               }}
-              className={`flex items-center gap-1 px-2.5 py-1 text-xs font-tech font-bold rounded-xs border transition-all ${
+              className={`flex items-center gap-1 px-2 sm:px-2.5 py-1 text-[11px] sm:text-xs font-tech font-bold rounded-xs border transition-all ${
                 readerNoir
                   ? 'bg-white text-black border-white'
                   : 'bg-[#171520] text-gray-300 border-[#2e2b3c] hover:text-white'
@@ -337,7 +432,7 @@ export const MangaReader: React.FC<MangaReaderProps> = ({
                 setShowChapterList(!showChapterList);
                 setShowSettings(false);
               }}
-              className={`p-2 border rounded-xs transition-colors ${
+              className={`p-1.5 sm:p-2 border rounded-xs transition-colors ${
                 showChapterList
                   ? 'bg-white text-black border-white'
                   : 'bg-[#171520] text-gray-300 border-[#2e2b3c] hover:text-white'
@@ -354,7 +449,7 @@ export const MangaReader: React.FC<MangaReaderProps> = ({
                 setShowSettings(!showSettings);
                 setShowChapterList(false);
               }}
-              className={`p-2 border rounded-xs transition-colors ${
+              className={`p-1.5 sm:p-2 border rounded-xs transition-colors ${
                 showSettings
                   ? 'bg-white text-black border-white'
                   : 'bg-[#171520] text-gray-300 border-[#2e2b3c] hover:text-white'
@@ -367,7 +462,7 @@ export const MangaReader: React.FC<MangaReaderProps> = ({
             {/* Fullscreen */}
             <button
               onClick={toggleFullscreen}
-              className="p-2 bg-[#171520] text-gray-300 hover:text-white border border-[#2e2b3c] rounded-xs"
+              className="p-1.5 sm:p-2 bg-[#171520] text-gray-300 hover:text-white border border-[#2e2b3c] rounded-xs"
               title="Fullscreen (F)"
             >
               {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
@@ -376,9 +471,9 @@ export const MangaReader: React.FC<MangaReaderProps> = ({
         </div>
       </div>
 
-      {/* Settings Modal */}
+      {/* Settings Modal (Mobile Responsive) */}
       {showSettings && (
-        <div className="absolute top-14 right-4 z-50 w-72 bg-[#100f17] border border-[#2c293c] shadow-2xl rounded-xs p-4 text-white space-y-4 animate-in fade-in duration-150">
+        <div className="absolute top-14 right-2 left-2 sm:left-auto sm:right-4 z-50 w-auto sm:w-80 max-w-full bg-[#100f17] border border-[#2c293c] shadow-2xl rounded-xs p-4 text-white space-y-4 animate-in fade-in duration-150">
           <div className="flex items-center justify-between border-b border-[#242232] pb-2">
             <span className="font-editorial text-sm font-bold text-white">READER CUSTOMIZATION</span>
             <button onClick={() => setShowSettings(false)} className="text-gray-400 hover:text-white">
@@ -472,9 +567,9 @@ export const MangaReader: React.FC<MangaReaderProps> = ({
         </div>
       )}
 
-      {/* Chapters Drawer */}
+      {/* Chapters Drawer (Mobile Responsive) */}
       {showChapterList && (
-        <div className="absolute top-14 right-4 z-50 w-80 max-h-96 overflow-y-auto bg-[#100f17] border border-[#2c293c] shadow-2xl rounded-xs p-4 text-white space-y-3 animate-in fade-in duration-150">
+        <div className="absolute top-14 right-2 left-2 sm:left-auto sm:right-4 z-50 w-auto sm:w-80 max-w-full max-h-[75vh] overflow-y-auto bg-[#100f17] border border-[#2c293c] shadow-2xl rounded-xs p-4 text-white space-y-3 animate-in fade-in duration-150">
           <div className="flex items-center justify-between border-b border-[#242232] pb-2">
             <span className="font-editorial text-sm font-bold text-white">CHAPTER ARCHIVE</span>
             <button onClick={() => setShowChapterList(false)} className="text-gray-400 hover:text-white">
@@ -507,8 +602,19 @@ export const MangaReader: React.FC<MangaReaderProps> = ({
         </div>
       )}
 
+      {/* Slide to Read Floating Hint (Mobile / Touch friendly) */}
+      {showSwipeHint && settings.mode !== 'vertical' && (
+        <div className="absolute top-14 sm:top-16 left-1/2 -translate-x-1/2 z-30 pointer-events-none animate-in fade-in zoom-in duration-300">
+          <div className="bg-black/85 backdrop-blur-md text-white text-[10px] sm:text-xs font-tech font-bold px-3.5 py-1.5 rounded-full border border-white/20 shadow-2xl flex items-center gap-2">
+            <span className="text-[var(--vermilion)]">👈</span>
+            <span>SLIDE TO READ // スワイプでめくる</span>
+            <span className="text-[var(--vermilion)]">👉</span>
+          </div>
+        </div>
+      )}
+
       {/* Reader Display Area */}
-      <div className="flex-1 overflow-auto flex items-center justify-center relative p-2 sm:p-4">
+      <div className="flex-1 overflow-auto flex items-center justify-center relative p-1 sm:p-4">
         {loading ? (
           <div className="text-center space-y-3">
             <div className="font-editorial text-xl text-white font-bold tracking-wider">
@@ -528,7 +634,7 @@ export const MangaReader: React.FC<MangaReaderProps> = ({
           </div>
         ) : settings.mode === 'vertical' ? (
           /* Webtoon Vertical Infinite Scroll */
-          <div ref={webtoonRef} className="w-full max-w-3xl mx-auto space-y-2 py-16">
+          <div ref={webtoonRef} className="w-full max-w-3xl mx-auto space-y-2 py-16 px-2">
             {pages.map((url, idx) => (
               <div key={idx} className="relative">
                 <img
@@ -547,7 +653,7 @@ export const MangaReader: React.FC<MangaReaderProps> = ({
             ))}
 
             {/* Chapter Complete End Card */}
-            <div className="bg-[#100f17] border border-[#242232] rounded-xs p-8 text-center my-10 space-y-3">
+            <div className="bg-[#100f17] border border-[#242232] rounded-xs p-6 sm:p-8 text-center my-10 space-y-3">
               <div className="font-editorial text-2xl font-bold text-white">
                 CHAPTER COMPLETE
               </div>
@@ -567,13 +673,26 @@ export const MangaReader: React.FC<MangaReaderProps> = ({
             </div>
           </div>
         ) : settings.mode === 'double' ? (
-          /* Dual Page Spread Mode */
-          <div className="h-full w-full flex items-center justify-center gap-2 py-14">
-            <div className="max-h-[84vh] max-w-[48vw] flex items-center justify-end relative">
+          /* Dual Page Spread Mode with Touch Slide */
+          <div
+            className="h-full w-full flex items-center justify-center gap-2 py-12 sm:py-14 touch-none select-none cursor-grab active:cursor-grabbing"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            onMouseDown={handleTouchStart}
+            onMouseMove={handleTouchMove}
+            onMouseUp={handleTouchEnd}
+            style={{
+              transform: `translateX(${dragOffset}px)`,
+              transition: isDragging ? 'none' : 'transform 0.28s cubic-bezier(0.16, 1, 0.3, 1)',
+            }}
+          >
+            <div className="max-h-[84vh] max-w-[48vw] flex items-center justify-end relative pointer-events-none">
               <img
                 src={pages[currentPage - 1]}
                 alt={`Page ${currentPage}`}
                 referrerPolicy="no-referrer"
+                draggable={false}
                 className={`max-h-[84vh] object-contain shadow-2xl border border-black/30 ${
                   readerNoir ? 'reader-noir-filter' : ''
                 } ${settings.screentoneOverlay ? 'reader-screentone' : ''}`}
@@ -584,11 +703,12 @@ export const MangaReader: React.FC<MangaReaderProps> = ({
             </div>
 
             {currentPage < totalPages && (
-              <div className="max-h-[84vh] max-w-[48vw] flex items-center justify-start relative">
+              <div className="max-h-[84vh] max-w-[48vw] flex items-center justify-start relative pointer-events-none">
                 <img
                   src={pages[currentPage]}
                   alt={`Page ${currentPage + 1}`}
                   referrerPolicy="no-referrer"
+                  draggable={false}
                   className={`max-h-[84vh] object-contain shadow-2xl border border-black/30 ${
                     readerNoir ? 'reader-noir-filter' : ''
                   } ${settings.screentoneOverlay ? 'reader-screentone' : ''}`}
@@ -600,35 +720,38 @@ export const MangaReader: React.FC<MangaReaderProps> = ({
             )}
           </div>
         ) : (
-          /* Single Page (RTL / LTR) */
-          <div className="h-full w-full flex items-center justify-center py-14 relative">
-            <div className="max-h-[86vh] max-w-full relative flex items-center justify-center">
+          /* Single Page (RTL / LTR) with Full Interactive "Slide to Read" */
+          <div
+            className="h-full w-full flex items-center justify-center py-10 sm:py-14 relative touch-none select-none cursor-grab active:cursor-grabbing"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            onMouseDown={handleTouchStart}
+            onMouseMove={handleTouchMove}
+            onMouseUp={handleTouchEnd}
+          >
+            <div
+              style={{
+                transform: `translateX(${dragOffset}px)`,
+                transition: isDragging ? 'none' : 'transform 0.28s cubic-bezier(0.16, 1, 0.3, 1)',
+              }}
+              className="max-h-[86vh] max-w-full relative flex items-center justify-center will-change-transform"
+            >
               <img
                 src={pages[currentPage - 1]}
                 alt={`Page ${currentPage}`}
                 referrerPolicy="no-referrer"
-                className={`max-h-[86vh] object-contain shadow-2xl ${
+                draggable={false}
+                className={`max-h-[86vh] object-contain shadow-2xl pointer-events-none ${
                   settings.fit === 'width' ? 'w-full' : ''
                 } ${readerNoir ? 'reader-noir-filter' : ''} ${
                   settings.screentoneOverlay ? 'reader-screentone' : ''
                 }`}
               />
-              <div className="absolute bottom-2 right-2 bg-black/80 text-white font-mono text-xs px-2 py-0.5 rounded-xs border border-white/10">
+              <div className="absolute bottom-2 right-2 bg-black/80 text-white font-mono text-[10px] sm:text-xs px-2 py-0.5 rounded-xs border border-white/10 pointer-events-none">
                 {currentPage} / {totalPages}
               </div>
             </div>
-
-            {/* Click zones */}
-            <div
-              onClick={settings.mode === 'rtl' ? handleNextPage : handlePrevPage}
-              className="absolute inset-y-0 left-0 w-1/3 cursor-w-resize z-20"
-              title={settings.mode === 'rtl' ? 'Next Page' : 'Previous Page'}
-            />
-            <div
-              onClick={settings.mode === 'rtl' ? handlePrevPage : handleNextPage}
-              className="absolute inset-y-0 right-0 w-1/3 cursor-e-resize z-20"
-              title={settings.mode === 'rtl' ? 'Previous Page' : 'Next Page'}
-            />
           </div>
         )}
       </div>
@@ -674,24 +797,24 @@ export const MangaReader: React.FC<MangaReaderProps> = ({
         </div>
       )}
 
-      {/* Bottom Floating Bar */}
+      {/* Bottom Floating Bar (Mobile Optimized) */}
       <div
         className={`absolute bottom-0 inset-x-0 z-40 bg-[#09080c]/95 backdrop-blur-md border-t border-[#22202c] text-white transition-all duration-300 ${
           showControls ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0 pointer-events-none'
         }`}
       >
-        <div className="max-w-5xl mx-auto px-4 py-2.5 flex items-center justify-between gap-4">
+        <div className="max-w-5xl mx-auto px-3 sm:px-4 py-2 sm:py-2.5 flex items-center justify-between gap-2 sm:gap-4">
           <button
             onClick={settings.mode === 'rtl' ? handleNextPage : handlePrevPage}
             disabled={currentPage === 1 && !prevChapter}
-            className="flex items-center gap-1 px-3 py-1.5 bg-[#171520] text-gray-300 hover:text-white border border-[#2b273b] rounded-xs text-xs font-tech disabled:opacity-30"
+            className="flex items-center gap-1 px-2.5 sm:px-3 py-1.5 bg-[#171520] text-gray-300 hover:text-white border border-[#2b273b] rounded-xs text-xs font-tech disabled:opacity-30 shrink-0"
           >
             <ChevronLeft className="w-4 h-4" />
             <span className="hidden sm:inline">PREV</span>
           </button>
 
-          <div className="flex-1 flex items-center gap-3 max-w-md">
-            <span className="font-mono text-xs font-bold text-gray-300">
+          <div className="flex-1 flex items-center gap-2 sm:gap-3 max-w-md mx-1 sm:mx-2">
+            <span className="font-mono text-[11px] sm:text-xs font-bold text-gray-300 shrink-0">
               {currentPage}
             </span>
             <input
@@ -705,14 +828,14 @@ export const MangaReader: React.FC<MangaReaderProps> = ({
               }}
               className="flex-1 accent-white cursor-pointer h-1.5 bg-gray-700 rounded-full"
             />
-            <span className="font-mono text-xs text-gray-500">
+            <span className="font-mono text-[11px] sm:text-xs text-gray-500 shrink-0">
               {totalPages}
             </span>
           </div>
 
           <button
             onClick={settings.mode === 'rtl' ? handlePrevPage : handleNextPage}
-            className="flex items-center gap-1 px-3 py-1.5 bg-white text-black hover:bg-gray-200 rounded-xs text-xs font-tech font-bold"
+            className="flex items-center gap-1 px-2.5 sm:px-3 py-1.5 bg-white text-black hover:bg-gray-200 rounded-xs text-xs font-tech font-bold shrink-0"
           >
             <span className="hidden sm:inline">NEXT</span>
             <ChevronRight className="w-4 h-4" />

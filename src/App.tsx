@@ -175,25 +175,25 @@ export function App() {
       </main>
 
       {/* Refined Japanese Editorial Footer */}
-      <footer className="bg-[#050407] border-t border-[var(--ink-border)] py-16 px-6 sm:px-12 relative overflow-hidden transition-colors duration-400">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
-          <div className="flex items-center gap-4">
-            <div className={`w-10 h-10 flex items-center justify-center font-kanji font-bold text-xl border transition-all ${
+      <footer className="bg-[#050407] border-t border-[var(--ink-border)] py-10 sm:py-16 px-4 sm:px-8 lg:px-12 relative overflow-hidden transition-colors duration-400">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-6 sm:gap-8">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className={`w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center font-kanji font-bold text-lg sm:text-xl border transition-all ${
               noirMode ? 'bg-white text-black border-white' : 'bg-[var(--vermilion)] text-white border-[var(--vermilion)]'
             }`}>
               狂
             </div>
             <div>
-              <div className="font-editorial text-2xl font-bold tracking-tight text-white">
+              <div className="font-editorial text-xl sm:text-2xl font-bold tracking-tight text-white">
                 MANGA<span className={noirMode ? 'text-gray-400' : 'text-[var(--vermilion)]'}>KYO</span> (万華狂)
               </div>
-              <p className="text-xs text-gray-500 font-tech uppercase tracking-widest mt-0.5">
+              <p className="text-[11px] sm:text-xs text-gray-500 font-tech uppercase tracking-widest mt-0.5">
                 The Japanese Editorial Manga Sanctuary
               </p>
             </div>
           </div>
 
-          <div className="font-tech text-xs text-gray-500 space-y-1.5 text-left md:text-right">
+          <div className="font-tech text-xs text-gray-500 space-y-1 text-left md:text-right">
             <p>
               Direct Distributed Scans Powered by{' '}
               <a
@@ -211,7 +211,7 @@ export function App() {
           </div>
         </div>
 
-        <div className="border-t border-white/5 mt-10 pt-5 max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center text-[10px] font-mono text-gray-600 gap-2">
+        <div className="border-t border-white/5 mt-8 sm:mt-10 pt-4 sm:pt-5 max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center text-[10px] font-mono text-gray-600 gap-2 text-center sm:text-left">
           <span>JAPANESE COLOR & NOIR PRINT EDITIONS • VERIFIED HIGH-RES PAGES</span>
           <span>© MANGA-KYO EDITORIAL ENGINE</span>
         </div>

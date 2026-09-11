@@ -114,10 +114,10 @@ export const MangaDetailModal: React.FC<MangaDetailModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-xl flex items-center justify-center p-4 sm:p-6 md:p-8 animate-in fade-in duration-200">
-      <div className="relative w-full max-w-4xl bg-[#0d0c13]/95 border border-white/10 shadow-2xl rounded-xl overflow-hidden my-auto max-h-[90vh] flex flex-col">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-xl flex items-center justify-center p-2 sm:p-6 md:p-8 animate-in fade-in duration-200">
+      <div className="relative w-full max-w-4xl bg-[#0d0c13]/95 border border-white/10 shadow-2xl rounded-xl overflow-hidden my-auto max-h-[94vh] sm:max-h-[90vh] flex flex-col">
         {/* Top Minimal Bar */}
-        <div className="py-3 px-6 border-b border-white/5 flex items-center justify-between text-gray-400">
+        <div className="py-2.5 px-4 sm:px-6 border-b border-white/5 flex items-center justify-between text-gray-400 shrink-0">
           <div className="flex items-center gap-2 text-xs font-tech tracking-wider uppercase">
             <span className="text-[var(--vermilion)] font-bold">ARCHIVE</span>
             <span className="text-gray-700">/</span>
@@ -137,12 +137,12 @@ export const MangaDetailModal: React.FC<MangaDetailModalProps> = ({
         </div>
 
         {/* Modal Scrollable Container */}
-        <div className="overflow-y-auto flex-1 p-6 sm:p-8 space-y-8 scrollbar-thin">
+        <div className="overflow-y-auto flex-1 p-4 sm:p-8 space-y-6 sm:space-y-8 scrollbar-thin">
           {/* Top Section: Artwork + Editorial Information */}
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 sm:gap-8 items-start">
             {/* Left: Cover Artwork */}
             <div className="md:col-span-4 flex flex-col items-center">
-              <div className="relative w-full max-w-[210px] aspect-[3/4.5] bg-black rounded-lg overflow-hidden shadow-2xl border border-white/10">
+              <div className="relative w-full max-w-[170px] sm:max-w-[210px] aspect-[3/4.5] bg-black rounded-lg overflow-hidden shadow-2xl border border-white/10">
                 <img
                   src={manga.coverArtUrl}
                   alt={manga.title}
@@ -291,13 +291,13 @@ export const MangaDetailModal: React.FC<MangaDetailModalProps> = ({
                   </button>
                 </div>
 
-                <div className="relative">
+                <div className="relative flex-1 sm:flex-initial min-w-[120px]">
                   <input
                     type="text"
                     placeholder="Search chapter..."
                     value={chapterSearch}
                     onChange={(e) => setChapterSearch(e.target.value)}
-                    className="bg-white/5 text-white text-xs px-3 py-1.5 rounded-full border border-white/10 focus:outline-none focus:border-[var(--vermilion)] w-32 sm:w-40 font-tech"
+                    className="bg-white/5 text-white text-xs px-3 py-1.5 rounded-full border border-white/10 focus:outline-none focus:border-[var(--vermilion)] w-full sm:w-40 font-tech"
                   />
                 </div>
 

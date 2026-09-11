@@ -72,28 +72,28 @@ export const MangaCard: React.FC<MangaCardProps> = ({
       </div>
 
       {/* Content Info */}
-      <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
+      <div className="p-3 sm:p-4 flex-1 flex flex-col justify-between space-y-2 sm:space-y-3">
         <div>
           <h3
             onClick={() => {
               soundFx.playClick();
               onSelect(manga);
             }}
-            className="font-editorial text-sm font-bold text-white line-clamp-1 hover:text-[var(--vermilion)] cursor-pointer transition-colors"
+            className="font-editorial text-xs sm:text-sm font-bold text-white line-clamp-1 hover:text-[var(--vermilion)] cursor-pointer transition-colors"
             title={manga.title}
           >
             {manga.title}
           </h3>
 
-          <p className="text-[11px] text-gray-400 truncate mt-1 font-tech">
+          <p className="text-[10px] sm:text-[11px] text-gray-400 truncate mt-0.5 sm:mt-1 font-tech">
             {manga.author}
           </p>
 
-          <div className="flex flex-wrap gap-1.5 mt-2">
+          <div className="flex flex-wrap gap-1 sm:gap-1.5 mt-1.5 sm:mt-2">
             {manga.genres.slice(0, 2).map((g) => (
               <span
                 key={g}
-                className="text-[9px] font-tech text-gray-400 px-2 py-0.5 bg-[#171520] border border-[#262334] rounded-xs"
+                className="text-[8px] sm:text-[9px] font-tech text-gray-400 px-1.5 sm:px-2 py-0.5 bg-[#171520] border border-[#262334] rounded-xs"
               >
                 {g}
               </span>
@@ -107,13 +107,13 @@ export const MangaCard: React.FC<MangaCardProps> = ({
             soundFx.playSlash();
             onQuickRead(manga);
           }}
-          className={`w-full py-2 text-xs font-tech font-bold rounded-xs transition-colors flex items-center justify-center gap-1.5 ${
+          className={`w-full py-1.5 sm:py-2 text-[11px] sm:text-xs font-tech font-bold rounded-xs transition-colors flex items-center justify-center gap-1 sm:gap-1.5 cursor-pointer ${
             noirMode
               ? 'bg-white text-black hover:bg-gray-200'
               : 'bg-[var(--vermilion)] text-white hover:brightness-110'
           }`}
         >
-          <Play className="w-3 h-3 fill-current" />
+          <Play className="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-current" />
           <span>READ NOW</span>
         </button>
       </div>
