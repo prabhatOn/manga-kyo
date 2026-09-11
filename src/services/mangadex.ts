@@ -1,9 +1,25 @@
 import { Manga, Chapter, ChapterPages, LatestChapterUpdate } from '../types/manga';
 import { CURATED_ADULT_VAULT, ADULT_COVERS, ADULT_VERIFIED_CHAPTERS } from './adultVault';
 import { PRECOMPUTED_CHAPTER_PAGES } from './chapterPagesVault';
+import { getMultiSourceChapterPages, getMultiSourceChaptersForManga } from './mangaProviders';
 
-const API_BASE = import.meta.env.DEV ? '/api-mangadex' : 'https://api.mangadex.org';
+export const API_BASE = '/api-mangadex';
 const COVERS_BASE = 'https://uploads.mangadex.org/covers';
+
+/**
+ * Resilient API fetch helper:
+ * Tries local/Vercel proxy (/api-mangadex) first, falls back to direct MangaDex API if needed.
+ */
+export async function apiFetch(path: string, init?: RequestInit): Promise<Response> {
+  const cleanPath = path.startsWith('/') ? path : `/${path}`;
+  try {
+    const res = await fetch(`${API_BASE}${cleanPath}`, init);
+    if (res.ok) return res;
+  } catch (err) {
+    // dev proxy or rewrite not available
+  }
+  return fetch(`https://api.mangadex.org${cleanPath}`, init);
+}
 
 // Query string parameter to guarantee all MangaDex ratings (including 18+ Adult, Erotica, and Hentai) are returned
 export const ALL_CONTENT_RATINGS = '&contentRating[]=safe&contentRating[]=suggestive&contentRating[]=erotica&contentRating[]=pornographic';
@@ -538,8 +554,8 @@ export async function getTopManga(language: 'all' | 'en' | 'hi' = 'all', limit: 
         ? '&availableTranslatedLanguage[]=en'
         : '';
 
-    const res = await fetch(
-      `${API_BASE}/manga?limit=${limit}&order[followedCount]=desc&includes[]=cover_art&includes[]=author${ALL_CONTENT_RATINGS}${langParams}`
+    const res = await apiFetch(
+      `/manga?limit=${limit}&order[followedCount]=desc&includes[]=cover_art&includes[]=author${ALL_CONTENT_RATINGS}${langParams}`
     );
 
     if (res.ok) {
@@ -575,8 +591,8 @@ export async function getTopManga(language: 'all' | 'en' | 'hi' = 'all', limit: 
  */
 export async function getHindiManga(limit: number = 15): Promise<Manga[]> {
   try {
-    const res = await fetch(
-      `${API_BASE}/manga?availableTranslatedLanguage[]=hi&limit=${limit}&order[followedCount]=desc&includes[]=cover_art&includes[]=author${ALL_CONTENT_RATINGS}`
+    const res = await apiFetch(
+      `/manga?availableTranslatedLanguage[]=hi&limit=${limit}&order[followedCount]=desc&includes[]=cover_art&includes[]=author${ALL_CONTENT_RATINGS}`
     );
     if (res.ok) {
       const data = await res.json();
@@ -604,8 +620,8 @@ export async function getHindiManga(limit: number = 15): Promise<Manga[]> {
  */
 export async function getAdultManga(limit: number = 24): Promise<Manga[]> {
   try {
-    const res = await fetch(
-      `${API_BASE}/manga?limit=${limit}&contentRating[]=erotica&contentRating[]=pornographic&order[followedCount]=desc&includes[]=cover_art&includes[]=author`
+    const res = await apiFetch(
+      `/manga?limit=${limit}&contentRating[]=erotica&contentRating[]=pornographic&order[followedCount]=desc&includes[]=cover_art&includes[]=author`
     );
     if (res.ok) {
       const data = await res.json();
@@ -631,8 +647,8 @@ export async function getAdultManga(limit: number = 24): Promise<Manga[]> {
  */
 export async function getHentaiManga(limit: number = 24): Promise<Manga[]> {
   try {
-    const res = await fetch(
-      `${API_BASE}/manga?limit=${limit}&contentRating[]=pornographic&order[followedCount]=desc&includes[]=cover_art&includes[]=author`
+    const res = await apiFetch(
+      `/manga?limit=${limit}&contentRating[]=pornographic&order[followedCount]=desc&includes[]=cover_art&includes[]=author`
     );
     if (res.ok) {
       const data = await res.json();
@@ -658,8 +674,8 @@ export async function getHentaiManga(limit: number = 24): Promise<Manga[]> {
  */
 export async function getLatestUpdates(limit: number = 16): Promise<Manga[]> {
   try {
-    const res = await fetch(
-      `${API_BASE}/manga?limit=${limit}&order[latestUploadedChapter]=desc&includes[]=cover_art&includes[]=author${ALL_CONTENT_RATINGS}`
+    const res = await apiFetch(
+      `/manga?limit=${limit}&order[latestUploadedChapter]=desc&includes[]=cover_art&includes[]=author${ALL_CONTENT_RATINGS}`
     );
     if (res.ok) {
       const data = await res.json();
@@ -679,8 +695,8 @@ export async function getLatestUpdates(limit: number = 16): Promise<Manga[]> {
  */
 export async function getLatestChapterFeed(limit: number = 14): Promise<LatestChapterUpdate[]> {
   try {
-    const chRes = await fetch(
-      `${API_BASE}/chapter?limit=${limit}&order[readableAt]=desc&includes[]=manga&includes[]=scanlation_group${ALL_CONTENT_RATINGS}`
+    const chRes = await apiFetch(
+      `/chapter?limit=${limit}&order[readableAt]=desc&includes[]=manga&includes[]=scanlation_group${ALL_CONTENT_RATINGS}`
     );
     if (!chRes.ok) return [];
     const chData = await chRes.json();
@@ -694,7 +710,7 @@ export async function getLatestChapterFeed(limit: number = 14): Promise<LatestCh
     if (mangaIds.length > 0) {
       try {
         const mangaQuery = mangaIds.map(id => `ids[]=${id}`).join('&');
-        const mRes = await fetch(`${API_BASE}/manga?${mangaQuery}&includes[]=cover_art${ALL_CONTENT_RATINGS}`);
+        const mRes = await apiFetch(`/manga?${mangaQuery}&includes[]=cover_art${ALL_CONTENT_RATINGS}`);
         if (mRes.ok) {
           const mData = await mRes.json();
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -760,8 +776,8 @@ export async function searchManga(query: string, language: 'all' | 'en' | 'hi' =
         ? '&availableTranslatedLanguage[]=en'
         : '';
 
-    const res = await fetch(
-      `${API_BASE}/manga?title=${encodeURIComponent(query)}&limit=25&includes[]=cover_art&includes[]=author${ALL_CONTENT_RATINGS}${langParams}`
+    const res = await apiFetch(
+      `/manga?title=${encodeURIComponent(query)}&limit=25&includes[]=cover_art&includes[]=author${ALL_CONTENT_RATINGS}${langParams}`
     );
     if (res.ok) {
       const data = await res.json();
@@ -795,16 +811,17 @@ export async function searchManga(query: string, language: 'all' | 'en' | 'hi' =
 }
 
 /**
- * Get Full Chapter Feed for a Manga with Intelligent Multi-Language Fallback
+ * Get Full Chapter Feed for a Manga with Multi-Source & Intelligent Fallback
  */
 export async function getMangaChapters(mangaId: string, language?: 'en' | 'hi' | 'all'): Promise<Chapter[]> {
+  const multiSource = getMultiSourceChaptersForManga(mangaId, language);
   const verified = VERIFIED_REAL_CHAPTERS[mangaId];
 
   // Helper to fetch feed with given lang param
   const fetchFeed = async (langParam: string): Promise<Chapter[]> => {
     try {
-      const res = await fetch(
-        `${API_BASE}/manga/${mangaId}/feed?limit=50&order[chapter]=desc&includes[]=scanlation_group${ALL_CONTENT_RATINGS}${langParam}`
+      const res = await apiFetch(
+        `/manga/${mangaId}/feed?limit=50&order[chapter]=desc&includes[]=scanlation_group${ALL_CONTENT_RATINGS}${langParam}`
       );
       if (!res.ok) return [];
       const data = await res.json();
@@ -841,14 +858,10 @@ export async function getMangaChapters(mangaId: string, language?: 'en' | 'hi' |
   // Attempt 1: Fetch requested language
   if (language === 'hi') {
     list = await fetchFeed('&translatedLanguage[]=hi');
-    // If no Hindi chapters found via API, check if we have verified Hindi chapters
     if (list.length === 0) {
       const verifiedHindi = verified?.filter((c) => c.language === 'hi');
       if (verifiedHindi && verifiedHindi.length > 0) {
         list = [...verifiedHindi];
-      } else {
-        // Otherwise fall back to English
-        list = await fetchFeed('&translatedLanguage[]=en');
       }
     }
   } else if (language === 'en') {
@@ -858,15 +871,24 @@ export async function getMangaChapters(mangaId: string, language?: 'en' | 'hi' |
     list = await fetchFeed('');
   }
 
-  // Attempt 2: If still empty, fetch without language restrictions to get any readable scan
-  if (list.length === 0) {
+  // Attempt 2: If still empty and not specifically Hindi, fetch all readable scans
+  if (list.length === 0 && language !== 'hi') {
     list = await fetchFeed('');
   }
 
-  // Merge verified real chapters
+  // Merge multi-source chapters (e.g. One Piece Ch 1-4, Chainsaw Man Ch 1, Spy x Family Ch 1)
+  if (multiSource && multiSource.length > 0) {
+    multiSource.forEach((ms) => {
+      if (!list.some((l) => l.id === ms.id || (l.chapter === ms.chapter && l.language === ms.language))) {
+        list.push(ms);
+      }
+    });
+  }
+
+  // Merge verified real chapters from adult vault or curated list
   if (verified && verified.length > 0) {
     verified.forEach((v) => {
-      if (!list.some((l) => l.id === v.id || l.chapter === v.chapter)) {
+      if (!list.some((l) => l.id === v.id || (l.chapter === v.chapter && l.language === v.language))) {
         list.push(v);
       }
     });
@@ -876,8 +898,7 @@ export async function getMangaChapters(mangaId: string, language?: 'en' | 'hi' |
     return list.sort((a, b) => (parseFloat(b.chapter) || 0) - (parseFloat(a.chapter) || 0));
   }
 
-  // Fallback: If completely unindexed on MangaDex, return verified authentic MangaDex chapter UUID
-  // NEVER generate fake synthetic IDs like `verified-${mangaId}-1`
+  // If completely unindexed on MangaDex, return verified authentic MangaDex chapter UUID
   const fallbackChapterId = language === 'hi'
     ? 'a3ca85f8-3ab9-4f41-89e9-42e67346257d' // One Punch Man Hindi Ch 1 (23 real pages)
     : '6310f6a1-17ee-4890-b837-2ec1b372905b'; // Berserk Ch 1 (94 real pages)
@@ -896,18 +917,18 @@ export async function getMangaChapters(mangaId: string, language?: 'en' | 'hi' |
 }
 
 /**
- * Fetch Pages for a Chapter via MangaDex At-Home server (Real Manga Pages Only)
+ * Fetch Pages for a Chapter via Multi-Source Providers or MangaDex At-Home server (Real Manga Pages Only)
  */
 export async function getChapterPages(chapterId: string): Promise<ChapterPages> {
-  // 1. First attempt: Fetch real manga pages directly from MangaDex At-Home server
-  // Live MD@Home provides dedicated authorized CDN nodes with zero anti-hotlink placeholder blocks
-  try {
-    let res = await fetch(`${API_BASE}/at-home/server/${chapterId}`);
-    if (!res.ok && API_BASE !== 'https://api.mangadex.org') {
-      // Fallback directly to official endpoint if dev proxy missed
-      res = await fetch(`https://api.mangadex.org/at-home/server/${chapterId}`);
-    }
+  // 0. Check multi-source provider first (e.g. One Piece Ch 1-4, Chainsaw Man Ch 1, Spy x Family Ch 1)
+  const multiSource = getMultiSourceChapterPages(chapterId);
+  if (multiSource) {
+    return multiSource;
+  }
 
+  // 1. Live MangaDex At-Home server fetch via apiFetch
+  try {
+    const res = await apiFetch(`/at-home/server/${chapterId}`);
     if (res.ok) {
       const data = await res.json();
       if (

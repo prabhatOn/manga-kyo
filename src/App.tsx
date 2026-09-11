@@ -165,22 +165,31 @@ export function App() {
     soundFx.playDon();
     setLoading(true);
     try {
-      const chapters = await getMangaChapters(manga.id, manga.hasHindi ? 'hi' : 'en');
+      const langParam = selectedLanguage === 'hi' ? 'hi' : 'all';
+      const chapters = await getMangaChapters(manga.id, langParam);
       let targetChapter: Chapter | undefined;
 
       if (specificChapterId) {
         targetChapter = chapters.find((c) => c.id === specificChapterId);
       }
       if (!targetChapter && chapters.length > 0) {
-        // Find Chapter 1 or earliest verified chapter
-        const ch1 = chapters.find(c => c.chapter === '1' || c.chapter === '0.01' || c.chapter === '0');
-        if (ch1) {
-          targetChapter = ch1;
-        } else {
-          const sortedAsc = [...chapters].sort(
-            (a, b) => (parseFloat(a.chapter) || 0) - (parseFloat(b.chapter) || 0)
-          );
-          targetChapter = sortedAsc[0];
+        // Find Chapter 1 matching language preference or earliest available
+        if (selectedLanguage === 'hi') {
+          const hiCh1 = chapters.find(c => c.language === 'hi' && (c.chapter === '1' || c.chapter === '0'));
+          if (hiCh1) targetChapter = hiCh1;
+          else targetChapter = chapters.find(c => c.language === 'hi');
+        }
+
+        if (!targetChapter) {
+          const ch1 = chapters.find(c => c.chapter === '1' || c.chapter === '0.01' || c.chapter === '0');
+          if (ch1) {
+            targetChapter = ch1;
+          } else {
+            const sortedAsc = [...chapters].sort(
+              (a, b) => (parseFloat(a.chapter) || 0) - (parseFloat(b.chapter) || 0)
+            );
+            targetChapter = sortedAsc[0];
+          }
         }
       }
 
@@ -192,7 +201,7 @@ export function App() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [selectedLanguage]);
 
   return (
     <div className={`min-h-screen bg-[var(--ink-bg)] text-[var(--washi-white)] flex flex-col transition-colors duration-400 ${

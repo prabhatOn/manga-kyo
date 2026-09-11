@@ -14,6 +14,9 @@ export default defineConfig({
         target: 'https://api.mangadex.org',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api-mangadex/, ''),
+        headers: {
+          'User-Agent': 'MangakyoEditorial/2.0 (contact@mangakyo.app)',
+        },
       },
     },
   },
