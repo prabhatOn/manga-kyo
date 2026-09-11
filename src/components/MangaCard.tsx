@@ -35,8 +35,7 @@ export const MangaCard: React.FC<MangaCardProps> = ({
             noirMode ? 'noir-cover-filter' : ''
           }`}
           onError={(e) => {
-            (e.target as HTMLImageElement).src =
-              'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=600&auto=format&fit=crop&q=80';
+            (e.target as HTMLImageElement).src = '/Standard-list-img-4.jpg';
           }}
         />
 
