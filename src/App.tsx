@@ -214,7 +214,9 @@ export function App() {
       {/* Hero Banner (Shown when not searching) */}
       {!searchQuery && (
         <HeroBanner
-          featuredManga={mangaList.slice(0, 6)}
+          featuredManga={mangaList
+            .filter((m) => !m.isAdult && !m.genres.includes('Hentai') && !m.genres.includes('18+ Adult'))
+            .slice(0, 8)}
           onSelectManga={(m) => setDetailManga(m)}
           onReadChapter={(m) => handleQuickRead(m)}
           onNavigateHindi={() => {

@@ -9,7 +9,7 @@ export const CURATED_ADULT_VAULT: Manga[] = [
     "id": "c2c8e42b-b242-4c69-ad99-6b3ce4ad55de",
     "title": "Tensei Nihakobinin no Isekai Kouryakuhou (転生荷運び人の異世界攻略法)",
     "description": "A man who yearned for a life of freedom reincarnates into another world and becomes a carrier—a non-combative class considered useless. Can he make use of his skills to live his dream life or could he be meant for something more? A sexy isekai manga about a man proving there’s more to him than his class!  Sei has alway",
-    "coverArtUrl": "https://uploads.mangadex.org/covers/c2c8e42b-b242-4c69-ad99-6b3ce4ad55de/ce7cb5d8-adfd-4dbe-b3a9-696a324cb0f2.jpg.256.jpg",
+    "coverArtUrl": "https://uploads.mangadex.org/covers/c2c8e42b-b242-4c69-ad99-6b3ce4ad55de/f21dfa6b-3e63-44f9-9f06-1eeaf618251b.jpg.256.jpg",
     "status": "ongoing",
     "year": 2023,
     "author": "Koumi Tarou",
@@ -1613,7 +1613,7 @@ export const CURATED_ADULT_VAULT: Manga[] = [
 ];
 
 export const ADULT_COVERS: { [mangaId: string]: string } = {
-  "c2c8e42b-b242-4c69-ad99-6b3ce4ad55de": "https://uploads.mangadex.org/covers/c2c8e42b-b242-4c69-ad99-6b3ce4ad55de/ce7cb5d8-adfd-4dbe-b3a9-696a324cb0f2.jpg.256.jpg",
+  "c2c8e42b-b242-4c69-ad99-6b3ce4ad55de": "https://uploads.mangadex.org/covers/c2c8e42b-b242-4c69-ad99-6b3ce4ad55de/f21dfa6b-3e63-44f9-9f06-1eeaf618251b.jpg.256.jpg",
   "64ed4d14-9e00-4b63-8799-547a508f5344": "https://uploads.mangadex.org/covers/64ed4d14-9e00-4b63-8799-547a508f5344/f6cd6d9c-b012-4e00-9b0b-382abc973476.jpg.256.jpg",
   "5b2cdbf6-9f64-4a01-9fd3-33b51724f9d3": "https://uploads.mangadex.org/covers/5b2cdbf6-9f64-4a01-9fd3-33b51724f9d3/a1d67a16-cb35-4a76-b386-04dfb8f6d6ad.jpg.256.jpg",
   "0cfadedb-99cf-4fe5-b117-dc624da32225": "https://uploads.mangadex.org/covers/0cfadedb-99cf-4fe5-b117-dc624da32225/facdfdce-1b4e-40c2-b7ad-bd633fbb659c.jpg.256.jpg",
