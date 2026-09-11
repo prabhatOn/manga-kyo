@@ -1,0 +1,160 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --ink-bg: #09080d;
+    --ink-surface: #121118;
+    --ink-surface-hover: #1b1924;
+    --ink-border: rgba(255, 255, 255, 0.08);
+    --ink-border-hover: rgba(230, 0, 18, 0.5);
+    --vermilion: #e60012;
+    --kin-gold: #d4af37;
+    --washi-white: #f7f5f0;
+    --text-muted: #8e8b99;
+  }
+
+  body {
+    background-color: var(--ink-bg);
+    color: var(--washi-white);
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    overflow-x: hidden;
+    transition: background-color 0.4s ease, color 0.4s ease;
+  }
+
+  #root {
+    min-height: 100vh;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+}
+
+/* Editorial Japanese Typography */
+.font-editorial {
+  font-family: 'Bebas Neue', 'Syne', sans-serif;
+  letter-spacing: 0.05em;
+}
+
+.font-manga-bold {
+  font-family: 'Dela Gothic One', sans-serif;
+}
+
+.font-tech {
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+.font-kanji {
+  font-family: 'Shippori Mincho', 'Noto Serif JP', serif;
+}
+
+.font-hindi {
+  font-family: 'Noto Sans Devanagari', sans-serif;
+}
+
+/* Big Manga Watermark Effects */
+.watermark-manga-text {
+  font-family: 'Dela Gothic One', 'Shippori Mincho', serif;
+  user-select: none;
+  pointer-events: none;
+  line-height: 0.85;
+  letter-spacing: -0.05em;
+  white-space: nowrap;
+}
+
+/* Pure Noir Black & White Mode */
+.noir-mode {
+  --ink-bg: #040405;
+  --ink-surface: #0c0b0f;
+  --ink-surface-hover: #16151c;
+  --ink-border: rgba(255, 255, 255, 0.12);
+  --ink-border-hover: #ffffff;
+  --vermilion: #ffffff;
+  --kin-gold: #e5e5e5;
+  --washi-white: #ffffff;
+  --text-muted: #888888;
+}
+
+.noir-mode .noir-cover-filter {
+  filter: grayscale(100%) contrast(125%) brightness(92%);
+  transition: filter 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.noir-mode .noir-cover-filter:hover {
+  filter: grayscale(20%) contrast(110%);
+}
+
+/* Wabi-Sabi Screentone Patterns */
+.bg-screentone-dots {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+  background-size: 10px 10px;
+}
+
+.bg-screentone-paper {
+  background-color: #eee7da;
+  background-image: radial-gradient(#c5baa7 1.2px, transparent 1.2px);
+  background-size: 8px 8px;
+}
+
+/* High-End Japanese Editorial Card */
+.manga-card-frame {
+  background: var(--ink-surface);
+  border: 1px solid var(--ink-border);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.35s ease,
+              box-shadow 0.35s ease;
+}
+
+.manga-card-frame:hover {
+  transform: translateY(-6px);
+  border-color: var(--ink-border-hover);
+  box-shadow: 0 16px 36px -8px rgba(0, 0, 0, 0.7);
+}
+
+/* Japanese Vertical Typography Ribbon */
+.kanji-ribbon {
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  letter-spacing: 0.35em;
+}
+
+/* Reader Canvas */
+.reader-canvas {
+  touch-action: pan-y pinch-zoom;
+}
+
+.reader-screentone {
+  position: relative;
+}
+
+.reader-screentone::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(0, 0, 0, 0.25) 1px, transparent 1px);
+  background-size: 4px 4px;
+  opacity: 0.15;
+  pointer-events: none;
+}
+
+.reader-noir-filter {
+  filter: grayscale(100%) contrast(135%) brightness(92%);
+}
+
+/* Refined Japanese Minimal Scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--ink-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2a2835;
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--vermilion);
+}
